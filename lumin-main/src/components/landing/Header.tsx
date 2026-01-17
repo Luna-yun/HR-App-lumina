@@ -129,13 +129,13 @@ export function Header() {
             className="hidden lg:flex items-center gap-3"
           >
             <ThemeSwitcher />
-            <a
-              href="#"
+            <Link
+              to="/login"
               className="text-sm font-medium text-foreground/70 hover:text-foreground transition-colors duration-300"
             >
               Sign in
-            </a>
-            <Link to="/pricing">
+            </Link>
+            <Link to="/signup">
               <Button 
                 variant="default" 
                 size="default" 
@@ -199,13 +199,14 @@ export function Header() {
                 ))}
               </nav>
               <div className="mt-5 pt-5 border-t border-border/50 space-y-3">
-                <a
-                  href="#"
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
                   className="block px-4 py-2.5 text-center text-foreground/70 hover:text-foreground transition-colors"
                 >
                   Sign In
-                </a>
-                <Link to="/pricing" onClick={() => setMobileMenuOpen(false)}>
+                </Link>
+                <Link to="/signup" onClick={() => setMobileMenuOpen(false)}>
                   <Button 
                     variant="default" 
                     size="lg" 

@@ -99,16 +99,17 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 px-4"
             >
-              <Link to="/pricing">
+              <Link to="/login">
                 <Button variant="hero" size="xl" className="group w-full sm:w-auto min-w-[200px]">
-                 Login
+                  Login
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                 </Button>
               </Link>
-              <Button variant="heroOutline" size="xl" className="group w-full sm:w-auto min-w-[180px]">
-                
-                Sign up
-              </Button>
+              <Link to="/signup">
+                <Button variant="heroOutline" size="xl" className="group w-full sm:w-auto min-w-[180px]">
+                  Sign up
+                </Button>
+              </Link>
             </motion.div>
 
             {/* Trust indicators */}
