@@ -23,6 +23,7 @@ import TimeTracking from "./pages/features/TimeTracking";
 import ASEANLabourPolicies from "./pages/features/ASEANLabourPolicies";
 import HRAdministration from "./pages/features/HRAdministration";
 import WorkflowAutomation from "./pages/features/WorkflowAutomation";
+import TeamPage from "./pages/features/Team";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,7 @@ const App = () => (
             <Route path="/features/document-management" element={<DocumentManagement />} />
             <Route path="/features/time-tracking" element={<TimeTracking />} />
             <Route path="/features/asean-labour-policies" element={<ASEANLabourPolicies />} />
+            <Route path="/features/team" element={<TeamPage />} />
             <Route path="/features/hr-administration" element={<HRAdministration />} />
             <Route path="/features/workflow-automation" element={<WorkflowAutomation />} />
             
