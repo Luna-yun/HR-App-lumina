@@ -12,8 +12,8 @@ const navigation = [
   { name: "Features", href: "/#features" },
   { name: "Testimonials", href: "/#features" },
   { name: "FQA", href: "/#resources" },
-  { name: "ASEAN Labour Resources", href: "/#resources" },
-  { name: "Team", href: "/#resources"},
+  { name: "ASEAN Labour Resources", href: "features/asean-labour-policies" },
+  { name: "Team", href: "features/team"},
   { name: "Contact", href: "/#contact" },
   
 ];

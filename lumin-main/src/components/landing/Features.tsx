@@ -1,18 +1,20 @@
 import { useRef, useEffect, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { animate, stagger } from "animejs";
+import { Link } from "react-router-dom";
 import { 
   Users, Calendar, BarChart3, FileText, 
-  Clock, Globe, Shield, Zap 
+  Clock, Globe, Shield, Zap, ArrowRight 
 } from "lucide-react";
 
 const features = [
   {
     icon: Users,
     title: "Employee Management",
-    description: "Handles employee records, roles, personal details, and employment status in one system. ",
+    description: "Handles employee records, roles, personal details, and employment status in one system.",
     color: "feature-icon-indigo",
     gradient: "from-indigo-500/20 to-purple-500/20",
+    href: "/features/employee-management",
   },
   {
     icon: Calendar,
@@ -20,6 +22,7 @@ const features = [
     description: "Manages leave requests, approvals, attendance, and absence tracking.",
     color: "feature-icon-blue",
     gradient: "from-blue-500/20 to-cyan-500/20",
+    href: "/features/leave-attendance",
   },
   {
     icon: BarChart3,
@@ -27,6 +30,7 @@ const features = [
     description: "Evaluates employee performance based on goals, feedback, and appraisals.",
     color: "feature-icon-teal",
     gradient: "from-teal-500/20 to-emerald-500/20",
+    href: "/features/performance-reviews",
   },
   {
     icon: FileText,
@@ -34,6 +38,7 @@ const features = [
     description: "Stores, organizes, and secures HR-related documents digitally.",
     color: "feature-icon-emerald",
     gradient: "from-emerald-500/20 to-green-500/20",
+    href: "/features/document-management",
   },
   {
     icon: Clock,
@@ -41,20 +46,23 @@ const features = [
     description: "Records working hours, overtime, and project time accurately.",
     color: "feature-icon-amber",
     gradient: "from-amber-500/20 to-orange-500/20",
+    href: "/features/time-tracking",
   },
   {
     icon: Globe,
     title: "ASEAN Labour Policies",
-    description: "Used to apply the correct labor laws when an employee requests leave or is terminated, ensuring all actions follow legal requirements ",
+    description: "Apply correct labor laws for leave and termination across ASEAN nations.",
     color: "feature-icon-rose",
     gradient: "from-rose-500/20 to-pink-500/20",
+    href: "/features/asean-labour-policies",
   },
   {
     icon: Shield,
-    title: "Manage HR administration",
+    title: "HR Administration",
     description: "The HR Admin manages and maintains all employee data through system.",
     color: "feature-icon-purple",
     gradient: "from-purple-500/20 to-violet-500/20",
+    href: "/features/hr-administration",
   },
   {
     icon: Zap,
@@ -62,9 +70,8 @@ const features = [
     description: "Automates HR processes such as approvals, notifications, and task assignments.",
     color: "feature-icon-indigo",
     gradient: "from-indigo-500/20 to-blue-500/20",
+    href: "/features/workflow-automation",
   },
-
-  
 ];
 
 export function Features() {
@@ -247,9 +254,10 @@ export function Features() {
             const Icon = feature.icon;
             
             return (
-              <div
+              <Link
                 key={feature.title}
-                className="feature-card opacity-0 group relative"
+                to={feature.href}
+                className="feature-card opacity-0 group relative block"
                 onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
                 onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
               >
@@ -268,14 +276,19 @@ export function Features() {
                   <h3 className="feature-title text-lg sm:text-xl font-display font-semibold text-foreground mb-2 sm:mb-3 relative z-10">
                     {feature.title}
                   </h3>
-                  <p className="feature-description text-muted-foreground text-sm sm:text-base leading-relaxed relative z-10">
+                  <p className="feature-description text-muted-foreground text-sm sm:text-base leading-relaxed relative z-10 mb-4">
                     {feature.description}
                   </p>
+
+                  {/* Learn more */}
+                  <div className="flex items-center gap-1 text-sm font-medium text-primary opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
+                    Learn more <ArrowRight className="w-4 h-4" />
+                  </div>
 
                   {/* Bottom accent line */}
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500" />
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

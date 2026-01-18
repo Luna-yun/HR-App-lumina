@@ -14,6 +14,16 @@ import EmployeeDashboard from "./pages/employee/Dashboard";
 import NotFound from "./pages/NotFound";
 import { USER_ROLES } from "./lib/constants";
 
+// Feature pages
+import EmployeeManagement from "./pages/features/EmployeeManagement";
+import LeaveAttendance from "./pages/features/LeaveAttendance";
+import PerformanceReviews from "./pages/features/PerformanceReviews";
+import DocumentManagement from "./pages/features/DocumentManagement";
+import TimeTracking from "./pages/features/TimeTracking";
+import ASEANLabourPolicies from "./pages/features/ASEANLabourPolicies";
+import HRAdministration from "./pages/features/HRAdministration";
+import WorkflowAutomation from "./pages/features/WorkflowAutomation";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -26,6 +36,17 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/pricing" element={<Pricing />} />
+            
+            {/* Feature pages */}
+            <Route path="/features/employee-management" element={<EmployeeManagement />} />
+            <Route path="/features/leave-attendance" element={<LeaveAttendance />} />
+            <Route path="/features/performance-reviews" element={<PerformanceReviews />} />
+            <Route path="/features/document-management" element={<DocumentManagement />} />
+            <Route path="/features/time-tracking" element={<TimeTracking />} />
+            <Route path="/features/asean-labour-policies" element={<ASEANLabourPolicies />} />
+            <Route path="/features/hr-administration" element={<HRAdministration />} />
+            <Route path="/features/workflow-automation" element={<WorkflowAutomation />} />
+            
             <Route 
               path="/login" 
               element={
