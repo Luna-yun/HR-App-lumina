@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
@@ -37,14 +38,16 @@ export function FinalCTA() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-10 sm:mt-12 flex flex-col items-center gap-4"
         >
-          <Button
-            variant="default"
-            size="lg"
-            className="group bg-gray-900 text-white px-6 sm:px-8 shadow-lg hover:bg-gray-800"
-          >
-            Sign Up
-            <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-          </Button>
+          <Link to="/signup">
+            <Button
+              variant="default"
+              size="lg"
+              className="group bg-gray-900 text-white px-6 sm:px-8 shadow-lg hover:bg-gray-800"
+            >
+              Sign Up
+              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
 
           {/* Free notice */}
           <span className="text-gray-600 text-sm sm:text-base mt-2">

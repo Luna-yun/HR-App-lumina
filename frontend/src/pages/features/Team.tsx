@@ -1,5 +1,7 @@
 // team.tsx
 import React from "react";
+import { Mail } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 
 type TeamMember = {
   id: number;
@@ -7,7 +9,6 @@ type TeamMember = {
   role: string;
   department: string;
   email: string;
-  avatarUrl?: string;
 };
 
 const teamMembers: TeamMember[] = [
@@ -43,50 +44,60 @@ const teamMembers: TeamMember[] = [
 
 export default function TeamPage() {
   return (
-    <div className="min-h-screen bg-gray-50 px-6 py-10">
-      <div className="mx-auto max-w-6xl">
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Our Team</h1>
-          <p className="mt-2 text-gray-600">
-            Meet the people who build and support our organization.
+    <section className="min-h-screen bg-background">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-10 max-w-3xl">
+          <h1 className="text-3xl font-semibold text-foreground">
+            Team Directory
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            View members across departments and roles within your organization.
           </p>
         </div>
 
-        {/* Team Grid */}
+        {/* Grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {teamMembers.map((member) => (
-            <div
+            <Card
               key={member.id}
-              className="rounded-xl bg-white p-6 shadow-sm transition hover:shadow-md"
+              className="bg-card border border-border/60 hover:border-border transition"
             >
-              {/* Avatar Placeholder */}
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-200 text-lg font-semibold text-gray-600">
-                {member.name.charAt(0)}
-              </div>
+              <CardContent className="p-6">
+                {/* Avatar */}
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-sm font-medium text-foreground">
+                  {member.name.charAt(0)}
+                </div>
 
-              <h2 className="text-lg font-semibold text-gray-900">
-                {member.name}
-              </h2>
+                {/* Name */}
+                <h2 className="text-lg font-medium text-foreground">
+                  {member.name}
+                </h2>
 
-              <p className="text-sm text-gray-500">{member.role}</p>
-
-              <div className="mt-3 text-sm text-gray-600">
-                <p>
-                  <span className="font-medium text-gray-700">
-                    Department:
-                  </span>{" "}
-                  {member.department}
+                {/* Role */}
+                <p className="text-sm text-muted-foreground">
+                  {member.role}
                 </p>
-                <p className="mt-1">
-                  <span className="font-medium text-gray-700">Email:</span>{" "}
-                  {member.email}
-                </p>
-              </div>
-            </div>
+
+                {/* Meta */}
+                <div className="mt-4 space-y-1 text-sm">
+                  <p className="text-muted-foreground">
+                    <span className="text-foreground font-medium">
+                      Department:
+                    </span>{" "}
+                    {member.department}
+                  </p>
+
+                  <p className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="h-4 w-4" />
+                    {member.email}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
