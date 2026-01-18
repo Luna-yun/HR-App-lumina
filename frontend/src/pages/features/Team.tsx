@@ -1,248 +1,199 @@
-import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, Mail } from "lucide-react";
-import { cn } from "@/lib/utils";
-
-/* -------------------------------------------------------------------------- */
-/*                                   Types                                    */
-/* -------------------------------------------------------------------------- */
+import { useState } from "react";
 
 type TeamMember = {
   id: number;
   name: string;
   role: string;
-  department: string;
-  email: string;
   bio: string;
-  isExecutive?: boolean;
+  image: string;
+  spotlight?: boolean;
 };
 
-/* -------------------------------------------------------------------------- */
-/*                                Mocked Data                                 */
-/* -------------------------------------------------------------------------- */
-
-const teamMembers: TeamMember[] = [
+const TEAM: TeamMember[] = [
   {
     id: 1,
-    name: "Alex Johnson",
+    name: "Avery Chen",
     role: "Chief Executive Officer",
-    department: "Executive",
-    email: "alex.johnson@example.com",
-    bio: "Alex sets the long-term vision for LuminaHR, focusing on global scale, governance, and platform integrity.",
-    isExecutive: true,
+    bio: "Architect of culture and long-term vision. Believes great teams are designed, not managed.",
+    image: "https://images.unsplash.com/photo-1607746882042-944635dfe10e",
+    spotlight: true,
   },
   {
     id: 2,
-    name: "Maria Chen",
-    role: "Chief Human Resources Officer",
-    department: "Executive",
-    email: "maria.chen@example.com",
-    bio: "Maria leads people strategy, organizational culture, and leadership development across regions.",
-    isExecutive: true,
+    name: "Lucas Moreno",
+    role: "Chief People Officer",
+    bio: "Builds systems where humans do their best work — at scale.",
+    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
+    spotlight: true,
   },
   {
     id: 3,
-    name: "David Smith",
-    role: "HR Manager",
-    department: "Human Resources",
-    email: "david.smith@example.com",
-    bio: "David oversees HR operations, compliance, and employee lifecycle management.",
+    name: "Sofia Patel",
+    role: "Design Lead",
+    bio: "Designs clarity. Obsessed with emotional resonance and invisible UX.",
+    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
   },
   {
     id: 4,
-    name: "Sarah Lee",
-    role: "UI / UX Designer",
-    department: "Design",
-    email: "sarah.lee@example.com",
-    bio: "Sarah designs intuitive, human-centered experiences across LuminaHR’s product ecosystem.",
+    name: "Ethan Brooks",
+    role: "Engineering Lead",
+    bio: "Turns complexity into calm, scalable systems.",
+    image: "https://images.unsplash.com/photo-1527980965255-d3b416303d12",
   },
   {
     id: 5,
-    name: "Alex Morgan",
-    role: "Senior Software Engineer",
-    department: "Engineering",
-    email: "alex.morgan@example.com",
-    bio: "Alex builds scalable backend systems powering LuminaHR’s enterprise features.",
+    name: "Mina Aung",
+    role: "AI Research",
+    bio: "Human-centered intelligence. Ethics before efficiency.",
+    image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
   },
 ];
 
-/* -------------------------------------------------------------------------- */
-/*                           Executive Spotlight                               */
-/* -------------------------------------------------------------------------- */
+export default function Team() {
+  const [active, setActive] = useState<TeamMember | null>(null);
 
-function ExecutiveSpotlight({ executives }: { executives: TeamMember[] }) {
   return (
-    <section className="mb-32">
-      <div className="grid lg:grid-cols-12 gap-16 items-center">
-        {/* Left */}
-        <div className="lg:col-span-5">
-          <span className="badge-primary">Leadership</span>
+    <div className="bg-white text-neutral-900">
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="mx-auto max-w-6xl px-6 py-28 text-center">
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="text-4xl md:text-6xl font-semibold tracking-tight"
+          >
+            Built by humans,<br className="hidden md:block" /> designed for humans
+          </motion.h1>
 
-          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
-            Executive Leadership
-          </h1>
-
-          <p className="mt-6 text-lg text-muted-foreground max-w-md">
-            Vision, governance, and people stewardship at enterprise scale.
-          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.8 }}
+            className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600"
+          >
+            We are a multidisciplinary team shaping how organizations grow,
+            connect, and thrive — thoughtfully.
+          </motion.p>
         </div>
+      </section>
 
-        {/* Right */}
-        <div className="lg:col-span-7 grid sm:grid-cols-2 gap-8">
-          {executives.map((exec) => (
-            <div
-              key={exec.id}
-              className="rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl p-8"
+      {/* EXECUTIVE SPOTLIGHT */}
+      <section className="mx-auto max-w-6xl px-6 py-20">
+        <h2 className="mb-12 text-2xl font-medium tracking-tight">
+          Executive Spotlight
+        </h2>
+
+        <div className="grid gap-12 md:grid-cols-2">
+          {TEAM.filter((m) => m.spotlight).map((member) => (
+            <motion.div
+              key={member.id}
+              whileHover={{ y: -4 }}
+              transition={{ type: "spring", stiffness: 200 }}
+              className="group flex flex-col gap-6 rounded-2xl border border-neutral-200 p-6 md:flex-row"
             >
-              <div className="flex items-center gap-4 mb-4">
-                <div className="h-14 w-14 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-                  <span className="font-semibold text-primary">
-                    {exec.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="font-semibold text-lg">{exec.name}</h3>
-                  <p className="text-sm text-muted-foreground">{exec.role}</p>
-                </div>
-              </div>
+              <img
+                src={member.image}
+                alt={member.name}
+                className="h-28 w-28 rounded-xl object-cover"
+              />
 
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {exec.bio}
-              </p>
-            </div>
+              <div>
+                <h3 className="text-xl font-medium">{member.name}</h3>
+                <p className="text-sm text-neutral-500">{member.role}</p>
+
+                <p className="mt-3 text-neutral-600 leading-relaxed">
+                  {member.bio}
+                </p>
+              </div>
+            </motion.div>
           ))}
         </div>
-      </div>
-    </section>
-  );
-}
+      </section>
 
-/* -------------------------------------------------------------------------- */
-/*                              Team Card                                     */
-/* -------------------------------------------------------------------------- */
+      {/* TEAM GRID */}
+      <section className="bg-neutral-50">
+        <div className="mx-auto max-w-6xl px-6 py-24">
+          <h2 className="mb-16 text-center text-3xl font-medium tracking-tight">
+            The Team
+          </h2>
 
-function TeamCard({
-  member,
-  expanded,
-  onToggle,
-}: {
-  member: TeamMember;
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <div className="relative">
-      <button
-        onClick={onToggle}
-        className={cn(
-          "w-full text-left rounded-2xl border border-border/60 bg-card/70 backdrop-blur-xl p-8 transition-shadow duration-500",
-          expanded &&
-            "shadow-[0_30px_80px_-30px_hsl(var(--primary)/0.25)]"
-        )}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <span className="font-semibold text-primary">
-                {member.name
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")}
-              </span>
-            </div>
+          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
+            {TEAM.filter((m) => !m.spotlight).map((member) => (
+              <motion.button
+                key={member.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setActive(member)}
+                className="group text-left"
+              >
+                <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
 
-            <div>
-              <h3 className="font-semibold">{member.name}</h3>
-              <p className="text-sm text-muted-foreground">{member.role}</p>
-            </div>
+                  {/* Hover micro-bio */}
+                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                    <div className="p-4 text-white">
+                      <p className="text-sm leading-snug">{member.bio}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <p className="font-medium">{member.name}</p>
+                  <p className="text-sm text-neutral-500">{member.role}</p>
+                </div>
+              </motion.button>
+            ))}
           </div>
-
-          <ChevronDown
-            className={cn(
-              "h-5 w-5 text-muted-foreground transition-transform duration-300",
-              expanded && "rotate-180"
-            )}
-          />
         </div>
+      </section>
 
-        {/* Hover micro-bio */}
-        <div className="mt-4 hidden lg:block opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <p className="text-sm text-muted-foreground">{member.bio}</p>
-        </div>
-      </button>
-
-      {/* Expanded org-card */}
+      {/* MODAL STORYTELLING */}
       <AnimatePresence>
-        {expanded && (
+        {active && (
           <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-            className="overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
+            onClick={() => setActive(null)}
           >
-            <div className="px-8 py-6 border-x border-b border-border/60 rounded-b-2xl bg-card/60">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                {member.bio}
+            <motion.div
+              initial={{ y: 40, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 40, opacity: 0 }}
+              transition={{ duration: 0.4 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg rounded-3xl bg-white p-8"
+            >
+              <img
+                src={active.image}
+                alt={active.name}
+                className="mb-6 h-64 w-full rounded-2xl object-cover"
+              />
+
+              <h3 className="text-2xl font-medium">{active.name}</h3>
+              <p className="text-neutral-500">{active.role}</p>
+
+              <p className="mt-4 text-neutral-700 leading-relaxed">
+                {active.bio}
               </p>
 
-              <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <Mail className="h-4 w-4" />
-                {member.email}
-              </div>
-            </div>
+              <button
+                onClick={() => setActive(null)}
+                className="mt-6 text-sm font-medium text-neutral-500 hover:text-neutral-800"
+              >
+                Close
+              </button>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*                               Page                                         */
-/* -------------------------------------------------------------------------- */
-
-export default function TeamPage() {
-  const executives = teamMembers.filter((m) => m.isExecutive);
-  const staff = teamMembers.filter((m) => !m.isExecutive);
-
-  const [expandedId, setExpandedId] = useState<number | null>(null);
-
-  return (
-    <section className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-24">
-        {/* Executive Spotlight */}
-        <ExecutiveSpotlight executives={executives} />
-
-        {/* Team Directory */}
-        <section>
-          <h2 className="text-3xl sm:text-4xl font-semibold mb-4">
-            Team Directory
-          </h2>
-          <p className="text-muted-foreground max-w-xl mb-12">
-            Explore departments and roles across the organization.
-          </p>
-
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {staff.map((member) => (
-              <TeamCard
-                key={member.id}
-                member={member}
-                expanded={expandedId === member.id}
-                onToggle={() =>
-                  setExpandedId(
-                    expandedId === member.id ? null : member.id
-                  )
-                }
-              />
-            ))}
-          </div>
-        </section>
-      </div>
-    </section>
   );
 }
