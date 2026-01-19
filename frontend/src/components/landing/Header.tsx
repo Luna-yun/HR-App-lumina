@@ -13,6 +13,7 @@ const navigation = [
   { name: "FAQ", href: "/#faq" },
   { name: "ASEAN Labour Resources", href: "/features/asean-labour-policies" },
   { name: "Team", href: "/features/team" },
+  { name: "Contact", href: "/#contact" },
 ];
 
 export function Header() {
