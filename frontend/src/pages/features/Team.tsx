@@ -1,199 +1,191 @@
-import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type TeamMember = {
   id: number;
   name: string;
   role: string;
   bio: string;
+  phone: string;
+  email: string;
   image: string;
-  spotlight?: boolean;
 };
 
+// Team Members 
 const TEAM: TeamMember[] = [
   {
     id: 1,
-    name: "Avery Chen",
-    role: "Chief Executive Officer",
-    bio: "Architect of culture and long-term vision. Believes great teams are designed, not managed.",
-    image: "https://images.unsplash.com/photo-1607746882042-944635dfe10e",
-    spotlight: true,
+    name: "Thet Mon Hnin",
+    role: "Team Leader",
+    bio: "Leads the team and coordinates overall project activities. Actively participated in collecting and reviewing ASEAN labour law data to ensure accuracy and relevance for the system.",
+    phone: "+95 9 123 456 789",
+    email: "thetmonhnin@uit.edu.mm",
+    image: "",
   },
   {
+    name: "Htet Wunna",
     id: 2,
-    name: "Lucas Moreno",
-    role: "Chief People Officer",
-    bio: "Builds systems where humans do their best work — at scale.",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d",
-    spotlight: true,
+    role: "Team Member",
+    bio: "Assisted in gathering and comparing project data including labour regulations, HR procedures, and leave management information across ASEAN contexts.",
+    phone: "+95 9 987 654 321",
+    email: "htetwunna@uit.edu.mm",
+    image: "",
   },
   {
     id: 3,
-    name: "Sofia Patel",
-    role: "Design Lead",
-    bio: "Designs clarity. Obsessed with emotional resonance and invisible UX.",
-    image: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+    name: "Thet Htet Hnin",
+    role: "Team member",
+    bio: "Contributed to collecting and organizing project-related data such as ASEAN labour guidelines, HR workflows, and system documentation needs.",
+    phone: "+95 9 456 789 123",
+    email: "thethtethnin@uit.edu.mm",
+    image: "",
   },
   {
     id: 4,
-    name: "Ethan Brooks",
-    role: "Engineering Lead",
-    bio: "Turns complexity into calm, scalable systems.",
-    image: "https://images.unsplash.com/photo-1527980965255-d3b416303d12",
+    name: "Hsu Myat Htet",
+    role: "Team member",
+    bio: "Assisted in gathering and comparing project data including labour regulations, HR procedures, and leave management information across ASEAN contexts.",
+    phone: "+95 9 321 654 987",
+    email: "hsumyathtet@uit.edu.mm",
+    image: "",
   },
   {
     id: 5,
-    name: "Mina Aung",
-    role: "AI Research",
-    bio: "Human-centered intelligence. Ethics before efficiency.",
-    image: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
+    name: "Nann Eaindray Khin",
+    role: "Team member",
+    bio: "Participated in data collection and review covering ASEAN labour information, HR policies, and functional requirements to support the project.",
+    phone: "+95 9 555 666 777",
+    email: "nanneaindraykhin@gmail.com",
+    image: "",
   },
 ];
 
-export default function Team() {
-  const [active, setActive] = useState<TeamMember | null>(null);
+export default function TeamPage() {
+  const [activeId, setActiveId] = useState<number | null>(null);
 
   return (
-    <div className="bg-white text-neutral-900">
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="mx-auto max-w-6xl px-6 py-28 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-4xl md:text-6xl font-semibold tracking-tight"
-          >
-            Built by humans,<br className="hidden md:block" /> designed for humans
-          </motion.h1>
+    <div className="bg-background text-foreground dark:bg-[#0f0f0f] duration-300">
 
-          <motion.p
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.8 }}
-            className="mx-auto mt-6 max-w-2xl text-lg text-neutral-600"
-          >
-            We are a multidisciplinary team shaping how organizations grow,
-            connect, and thrive — thoughtfully.
-          </motion.p>
-        </div>
+      {/*US*/}
+      <section className="relative w-full min-h-screen flex flex-col justify-center items-center bg-primary/5 dark:bg-white/5 px-6 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-5xl md:text-6xl font-bold leading-tight bg-gradient-to-r from-[#3B82F6] via-[#6366F1] to-[#B45309] bg-clip-text text-transparent"
+        >
+          LuminaHR: Empowering Teams <br />
+          ASEAN-Compliant Leave Management
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3, duration: 0.8 }}
+          className="mt-6 max-w-3xl text-lg text-gray-700 dark:text-gray-300"
+        >
+          Streamline employee leave workflows, ensure compliance with ASEAN labour regulations, and make HR management effortless for your company.
+        </motion.p>
       </section>
 
-      {/* EXECUTIVE SPOTLIGHT */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <h2 className="mb-12 text-2xl font-medium tracking-tight">
-          Executive Spotlight
+      {/*  TEAM MEMBERS  */}
+      <section
+        id="team-section"
+        className="max-w-4xl mx-auto mt-16 px-4 flex flex-col gap-10 pb-24"
+      >
+        <h2 className="text-3xl font-semibold text-center text-primary mb-8 dark:text-purple-300">
+          Our Leadership & Visionaries
         </h2>
 
-        <div className="grid gap-12 md:grid-cols-2">
-          {TEAM.filter((m) => m.spotlight).map((member) => (
-            <motion.div
-              key={member.id}
-              whileHover={{ y: -4 }}
-              transition={{ type: "spring", stiffness: 200 }}
-              className="group flex flex-col gap-6 rounded-2xl border border-neutral-200 p-6 md:flex-row"
-            >
-              <img
-                src={member.image}
-                alt={member.name}
-                className="h-28 w-28 rounded-xl object-cover"
-              />
-
-              <div>
-                <h3 className="text-xl font-medium">{member.name}</h3>
-                <p className="text-sm text-neutral-500">{member.role}</p>
-
-                <p className="mt-3 text-neutral-600 leading-relaxed">
-                  {member.bio}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {TEAM.map((member) => (
+          <FadeInCard
+            key={member.id}
+            member={member}
+            activeId={activeId}
+            setActiveId={setActiveId}
+          />
+        ))}
       </section>
 
-      {/* TEAM GRID */}
-      <section className="bg-neutral-50">
-        <div className="mx-auto max-w-6xl px-6 py-24">
-          <h2 className="mb-16 text-center text-3xl font-medium tracking-tight">
-            The Team
-          </h2>
+      {/* Contact */}
+      <section className="w-full bg-primary/10 dark:bg-white/10 py-20 px-6 mt-10">
+        <div className="max-w-3xl mx-auto text-center">
+          <h3 className="text-4xl font-bold mb-4 text-primary dark:text-purple-300">
+            Want to Know More Information!
+          </h3><p className="text-muted-foreground dark:text-gray-300 mb-8 text-lg">
+            Whether you're interested in partnerships, joining us, or learning more — reach out anytime.
+          </p>
 
-          <div className="grid grid-cols-2 gap-6 sm:grid-cols-3 md:grid-cols-4">
-            {TEAM.filter((m) => !m.spotlight).map((member) => (
-              <motion.button
-                key={member.id}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setActive(member)}
-                className="group text-left"
-              >
-                <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-
-                  {/* Hover micro-bio */}
-                  <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                    <div className="p-4 text-white">
-                      <p className="text-sm leading-snug">{member.bio}</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-3">
-                  <p className="font-medium">{member.name}</p>
-                  <p className="text-sm text-neutral-500">{member.role}</p>
-                </div>
-              </motion.button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* MODAL STORYTELLING */}
-      <AnimatePresence>
-        {active && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6"
-            onClick={() => setActive(null)}
+          <button
+            onClick={() => {
+              const section = document.getElementById("team-section");
+              section?.scrollIntoView({ behavior: "smooth" });
+            }}
+            className="px-8 py-3 rounded-xl bg-primary text-white font-medium shadow-md hover:opacity-90 transition"
           >
-            <motion.div
-              initial={{ y: 40, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: 40, opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-3xl bg-white p-8"
-            >
-              <img
-                src={active.image}
-                alt={active.name}
-                className="mb-6 h-64 w-full rounded-2xl object-cover"
-              />
-
-              <h3 className="text-2xl font-medium">{active.name}</h3>
-              <p className="text-neutral-500">{active.role}</p>
-
-              <p className="mt-4 text-neutral-700 leading-relaxed">
-                {active.bio}
-              </p>
-
-              <button
-                onClick={() => setActive(null)}
-                className="mt-6 text-sm font-medium text-neutral-500 hover:text-neutral-800"
-              >
-                Close
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            Contact Our Team
+          </button>
+        </div>
+      </section>
     </div>
+  );
+}
+
+// Teamcard
+function FadeInCard({
+  member,
+  activeId,
+  setActiveId,
+}: {
+  member: TeamMember;
+  activeId: number | null;
+  setActiveId: (id: number | null) => void;
+}) {
+  const isOpen = activeId === member.id;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className="flex flex-col gap-6 p-6 rounded-2xl shadow-xl border bg-white/40 border-black/10 backdrop-blur-md hover:shadow-2xl transition dark:bg-white/10 dark:border-white/10"
+    >
+      <div className="flex items-start gap-6">
+        <img
+          src={member.image}
+          alt={member.name}
+          className="w-32 h-32 object-cover rounded-xl shadow-md"
+        />
+
+        <div className="flex-1">
+          <h3 className="text-2xl font-semibold dark:text-white">{member.name}</h3>
+          <p className="text-primary font-medium dark:text-purple-300">{member.role}</p>
+
+          <p className="mt-2 text-muted-foreground dark:text-gray-300">{member.bio}</p>
+
+          <button
+            onClick={() => setActiveId(isOpen ? null : member.id)}
+            className="mt-4 text-primary text-sm dark:text-purple-300"
+          >
+            {isOpen ? "Hide Contact" : "View Contact Info"}
+          </button>
+
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.35 }}
+                className="mt-3 text-sm space-y-1 dark:text-gray-200"
+              >
+                <p>📞 {member.phone}</p>
+                <p>📧 {member.email}</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    </motion.div>
   );
 }
