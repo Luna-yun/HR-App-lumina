@@ -107,7 +107,8 @@ export function FAQ() {
 
   return (
     <section 
-      ref={sectionRef} 
+      ref={sectionRef}
+      id="faq"
       className="relative bg-[hsl(var(--dark-bg))] py-20 sm:py-28 lg:py-36"
     >
       {/* Subtle ambient glow */}
