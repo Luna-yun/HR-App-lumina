@@ -163,7 +163,8 @@ export default function Pricing() {
           </motion.div>
         </section>
 
-        {/* Pricing Cards */}
+Chaun Xaio Yun, [1/20/2026 7:24 PM]
+{/* Pricing Cards */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 mb-24">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 max-w-6xl mx-auto">
             {plans.map((plan, index) => {
@@ -247,7 +248,8 @@ export default function Pricing() {
                     {plan.cta}
                   </Button>
 
-                  <ul className="space-y-3">
+Chaun Xaio Yun, [1/20/2026 7:24 PM]
+<ul className="space-y-3">
                     {plan.features.map((feature, i) => (
                       <li key={i} className="flex items-start gap-3">
                         {feature.included ? (
@@ -341,7 +343,8 @@ export default function Pricing() {
           </motion.div>
         </section>
 
-        {/* FAQ CTA */}
+Chaun Xaio Yun, [1/20/2026 7:24 PM]
+{/* FAQ CTA */}
         <section className="container mx-auto px-4 sm:px-6 lg:px-8 mt-24 text-center">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

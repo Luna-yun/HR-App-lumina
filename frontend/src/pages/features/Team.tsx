@@ -23,8 +23,8 @@ const TEAM: TeamMember[] = [
     image: "",
   },
   {
-    name: "Htet Wunna",
     id: 2,
+    name: "Htet Wunna",
     role: "Team Member",
     bio: "Assisted in gathering and comparing project data including labour regulations, HR procedures, and leave management information across ASEAN contexts.",
     phone: "+95 9 987 654 321",
@@ -66,7 +66,7 @@ export default function TeamPage() {
   return (
     <div className="bg-background text-foreground dark:bg-[#0f0f0f] duration-300">
 
-      {/*US*/}
+      {/* HERO SECTION */}
       <section className="relative w-full min-h-screen flex flex-col justify-center items-center bg-primary/5 dark:bg-white/5 px-6 text-center">
         <motion.h1
           initial={{ opacity: 0, y: 40 }}
@@ -88,7 +88,7 @@ export default function TeamPage() {
         </motion.p>
       </section>
 
-      {/*  TEAM MEMBERS  */}
+      {/* TEAM MEMBERS */}
       <section
         id="team-section"
         className="max-w-4xl mx-auto mt-16 px-4 flex flex-col gap-10 pb-24"
@@ -107,31 +107,29 @@ export default function TeamPage() {
         ))}
       </section>
 
-      {/* Contact */}
-      <section className="w-full bg-primary/10 dark:bg-white/10 py-20 px-6 mt-10">
-        <div className="max-w-3xl mx-auto text-center">
-          <h3 className="text-4xl font-bold mb-4 text-primary dark:text-purple-300">
-            Want to Know More Information!
-          </h3><p className="text-muted-foreground dark:text-gray-300 mb-8 text-lg">
-            Whether you're interested in partnerships, joining us, or learning more — reach out anytime.
-          </p>
+{/*main button*/}
+<section className="w-full bg-primary/10 dark:bg-white/10 py-20 px-6 mt-10">
+  <div className="max-w-3xl mx-auto text-center">
+    <h3 className="text-4xl font-bold mb-4 text-primary dark:text-purple-300">
+      Want to Know More Information!
+    </h3>
+    <p className="text-muted-foreground dark:text-gray-300 mb-8 text-lg">
+      Whether you're interested in partnerships, joining us, or learning more — reach out anytime.
+    </p>
 
-          <button
-            onClick={() => {
-              const section = document.getElementById("team-section");
-              section?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="px-8 py-3 rounded-xl bg-primary text-white font-medium shadow-md hover:opacity-90 transition"
-          >
-            Contact Our Team
-          </button>
-        </div>
-      </section>
+    <button
+      onClick={() => (window.location.href = "/")}
+      className="px-8 py-3 rounded-xl bg-blue-600 text-white font-medium shadow-md hover:bg-blue-700 transition dark:bg-purple-600 dark:hover:bg-purple-700"
+    >
+      Back to Main Page
+    </button>
+  </div>
+</section>
     </div>
   );
 }
 
-// Teamcard
+// TEAM CARD 
 function FadeInCard({
   member,
   activeId,
