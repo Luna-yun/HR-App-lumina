@@ -10,7 +10,16 @@ import Pricing from "./pages/Pricing";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
 import AdminDashboard from "./pages/admin/Dashboard";
+import AdminEmployees from "./pages/admin/Employees";
+import AdminDepartments from "./pages/admin/Departments";
+import AdminAttendance from "./pages/admin/Attendance";
+import AdminLeave from "./pages/admin/Leave";
+import AdminNotices from "./pages/admin/Notices";
 import EmployeeDashboard from "./pages/employee/Dashboard";
+import EmployeeProfile from "./pages/employee/Profile";
+import EmployeeAttendance from "./pages/employee/Attendance";
+import EmployeeLeave from "./pages/employee/Leave";
+import EmployeeNotices from "./pages/employee/Notices";
 import NotFound from "./pages/NotFound";
 import { USER_ROLES } from "./lib/constants";
 
@@ -49,39 +58,24 @@ const App = () => (
             <Route path="/features/hr-administration" element={<HRAdministration />} />
             <Route path="/features/workflow-automation" element={<WorkflowAutomation />} />
             
-            <Route 
-              path="/login" 
-              element={
-                <PublicOnlyRoute>
-                  <Login />
-                </PublicOnlyRoute>
-              } 
-            />
-            <Route 
-              path="/signup" 
-              element={
-                <PublicOnlyRoute>
-                  <SignUp />
-                </PublicOnlyRoute>
-              } 
-            />
-            <Route 
-              path="/admin/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-                  <AdminDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            <Route 
-              path="/employee/dashboard" 
-              element={
-                <ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}>
-                  <EmployeeDashboard />
-                </ProtectedRoute>
-              } 
-            />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
+            <Route path="/signup" element={<PublicOnlyRoute><SignUp /></PublicOnlyRoute>} />
+            
+            {/* Admin Routes */}
+            <Route path="/admin/dashboard" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminDashboard /></ProtectedRoute>} />
+            <Route path="/admin/employees" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminEmployees /></ProtectedRoute>} />
+            <Route path="/admin/departments" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminDepartments /></ProtectedRoute>} />
+            <Route path="/admin/attendance" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminAttendance /></ProtectedRoute>} />
+            <Route path="/admin/leave" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminLeave /></ProtectedRoute>} />
+            <Route path="/admin/notices" element={<ProtectedRoute allowedRoles={[USER_ROLES.ADMIN]}><AdminNotices /></ProtectedRoute>} />
+            
+            {/* Employee Routes */}
+            <Route path="/employee/dashboard" element={<ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}><EmployeeDashboard /></ProtectedRoute>} />
+            <Route path="/employee/profile" element={<ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}><EmployeeProfile /></ProtectedRoute>} />
+            <Route path="/employee/attendance" element={<ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}><EmployeeAttendance /></ProtectedRoute>} />
+            <Route path="/employee/leave" element={<ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}><EmployeeLeave /></ProtectedRoute>} />
+            <Route path="/employee/notices" element={<ProtectedRoute allowedRoles={[USER_ROLES.EMPLOYEE]}><EmployeeNotices /></ProtectedRoute>} />
+            
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
