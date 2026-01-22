@@ -1,214 +1,157 @@
+import React from "react";
 import { motion } from "framer-motion";
-import { Link } from "react-router-dom";
-import { 
-  Users, 
-  ArrowLeft, 
-  CheckCircle2, 
-  UserPlus, 
-  FolderOpen, 
-  Shield, 
-  Database,
+import { Link } from "react-router-dom"; // <-- Import Link
+import {
+  Users,
+  FileText,
+  CheckCircle2,
+  BarChart3,
+  Settings,
   Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const capabilities = [
+const features = [
   {
-    icon: UserPlus,
-    title: "Employee Onboarding",
-    description: "Streamlined onboarding workflows with digital document collection and automated task assignments."
+    icon: Users,
+    title: "Centralized Employee Records",
+    description:
+      "Keep all employee information, roles, and employment status in one secure system."
   },
   {
-    icon: FolderOpen,
-    title: "Centralized Records",
-    description: "Single source of truth for all employee data, accessible securely from anywhere."
+    icon: CheckCircle2,
+    title: "Employment Status Tracking",
+    description:
+      "Monitor Active, Resigned, Terminated, or Excused employees with detailed logs."
   },
   {
-    icon: Shield,
-    title: "Role-Based Access",
-    description: "Granular permissions ensure employees see only what they need."
+    icon: FileText,
+    title: "Legal Compliance",
+    description:
+      "Ensure all actions comply with ASEAN labour laws with built-in guidance for HR staff."
   },
   {
-    icon: Database,
-    title: "Data Integrity",
-    description: "Audit trails and version history for compliance and accountability."
+    icon: BarChart3,
+    title: "Reports & Audit Logs",
+    description:
+      "Generate audit-ready logs and HR reports quickly and efficiently."
+  },
+  {
+    icon: Settings,
+    title: "Roles & Permissions",
+    description:
+      "Assign HR staff access levels to control sensitive information securely."
+  },
+  {
+    icon: Sparkles,
+    title: "Intuitive Dashboard",
+    description:
+      "Clean, interactive UI to navigate employee records, statuses, and workflow easily."
   }
 ];
 
-const benefits = [
-  "Reduce administrative overhead by 60%",
-  "Eliminate paper-based processes",
-  "Ensure data accuracy across systems",
-  "Enable employee self-service updates",
-  "Maintain compliance with data regulations"
+const workflowSteps = [
+  { number: "1", title: "Add Employee", description: "Create employee profile with details and role assignment." },
+  { number: "2", title: "Update Status", description: "Change employment status to Resigned, Terminated, or Excused." },
+  { number: "3", title: "Compliance Check", description: "System validates actions against ASEAN labour laws." },
+  { number: "4", title: "Generate Reports", description: "Produce audit logs, legal documents, and management reports." }
 ];
 
-export default function EmployeeManagementPage() {
+const benefits = [
+  { title: "Centralized Data", description: "All employee records and statuses stored securely in one system." },
+  { title: "Compliance Assurance", description: "Reduce legal risks with built-in labour law guidance." },
+  { title: "Workflow Efficiency", description: "HR staff process exits and updates quickly." },
+  { title: "Transparency", description: "Maintain clear logs for audits and management review." }
+];
+
+const EmployeeManagement: React.FC = () => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 via-slate-50 to-white py-20 font-sans text-gray-900">
+      
       {/* Hero Section */}
-      <section className="relative py-24 sm:py-32 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="absolute top-20 right-20 w-96 h-96 bg-primary/10 rounded-full blur-[120px]" />
-        
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <Link 
-            to="/#features" 
-            className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Features
-          </Link>
-          
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="text-center py-16 px-6">
+        <h1 className="text-5xl font-bold mb-4 text-black">
+          Employee Records & Compliance System
+        </h1>
+        <p className="text-gray-700 max-w-3xl mx-auto mb-8">
+          Manage employee records, track employment status, and ensure compliance with ASEAN labour laws — all in one intuitive platform.
+        </p>
+        <Button className="px-10 py-3 btn-primarytext-white font-semibold rounded-xl  transition-all">
+          Check How It Works
+        </Button>
+      </section>
+
+      {/* Features Section */}
+      <section className="max-w-7xl mx-auto px-6 py-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {features.map((feature, i) => {
+          const Icon = feature.icon;
+          return (
             <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              key={i}
+              whileHover={{ y: -6, scale: 1.03 }}
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all"
             >
-              <div className="feature-icon feature-icon-indigo mb-6">
-                <Users className="w-6 h-6" />
+              <div className="flex items-center mb-4">
+                <Icon className="w-8 h-8 text-blue-500 mr-3" />
+                <h3 className="text-xl font-semibold text-black">{feature.title}</h3>
               </div>
-              
-              <h1 className="headline-xl mb-6">
-                Employee 
-                <span className="gradient-text"> Management</span>
-              </h1>
-              
-              <p className="body-lg mb-8">
-                Handle employee records, roles, personal details, and employment status 
-                in one unified system. Built for enterprises that value precision and security.
-              </p>
-              
-              <div className="flex flex-wrap gap-4">
-                <Button className="btn-primary">
-                  Get Started
-                </Button>
-                <Button variant="outline" className="btn-secondary">
-                  View Demo
-                </Button>
-              </div>
+              <p className="text-gray-700">{feature.description}</p>
             </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-              className="relative"
-            >
-              <div className="card-float p-8">
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: "Active Employees", value: "2,847" },
-                    { label: "Departments", value: "24" },
-                    { label: "This Month", value: "+156" },
-                    { label: "Retention Rate", value: "94.2%" }
-                  ].map((stat, i) => (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.4 + i * 0.1 }}
-                      className="p-4 rounded-xl bg-muted/50"
-                    >
-                      <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                      <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    </motion.div>
-                  ))}
-                </div>
+          );
+        })}
+      </section>
+{/* Workflow Section */}
+      <section className="max-w-6xl mx-auto px-6 py-16 bg-white rounded-3xl shadow-sm">
+        <h2 className="text-3xl font-bold text-black mb-12 text-center">System Workflow</h2>
+        <div className="relative grid md:grid-cols-4 gap-10">
+          {workflowSteps.map((step, i) => (
+            <div key={i} className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-blue-200 text-white flex items-center justify-center text-2xl font-bold mb-4 shadow">
+                {step.number}
               </div>
-            </motion.div>
-          </div>
+              <h3 className="text-lg font-semibold text-black mb-2">{step.title}</h3>
+              <p className="text-gray-700 text-sm">{step.description}</p>
+            </div>
+          ))}
         </div>
       </section>
-      
-      {/* Capabilities Section */}
-      <section className="py-24 bg-secondary/30">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <span className="badge-primary">Capabilities</span>
-            <h2 className="headline-md mt-4">
-              Everything You Need to <span className="gradient-text">Manage People</span>
-            </h2>
-          </motion.div>
-          
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {capabilities.map((cap, i) => (
-              <motion.div
-                key={cap.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="card-elevated p-6 group hover:shadow-xl transition-all duration-300"
-              >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <cap.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{cap.title}</h3>
-                <p className="text-muted-foreground text-sm">{cap.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-      
+
       {/* Benefits Section */}
-      <section className="py-24">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section className="max-w-7xl mx-auto px-6 py-16">
+        <h2 className="text-3xl font-bold text-center text-black mb-12">Key Benefits</h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {benefits.map((benefit, i) => (
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              key={i}
+              whileHover={{ scale: 1.03 }}
+              className="bg-white p-6 rounded-2xl shadow-md border border-gray-200 hover:shadow-lg transition-all"
             >
-              <span className="badge-accent">Benefits</span>
-              <h2 className="headline-md mt-4 mb-8">
-                Why Organizations <span className="gradient-text">Choose Us</span>
-              </h2>
-              
-              <div className="space-y-4">
-                {benefits.map((benefit, i) => (
-                  <motion.div
-                    key={benefit}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 }}
-                    className="flex items-center gap-3"
-                  >
-                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                    <span className="text-foreground">{benefit}</span>
-                  </motion.div>
-                ))}
-              </div>
+              <h3 className="text-xl font-semibold text-black mb-2">{benefit.title}</h3>
+              <p className="text-gray-700">{benefit.description}</p>
             </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="card-float p-8 bg-gradient-to-br from-primary/5 to-accent/5"
-            >
-              <div className="flex items-center gap-3 mb-6">
-                <Sparkles className="w-6 h-6 text-primary" />
-                <h3 className="text-xl font-semibold">Ready to transform your HR?</h3>
-              </div>
-              <p className="text-muted-foreground mb-6">
-                Join thousands of organizations that have modernized their employee management.
-              </p>
-              <Button className="btn-primary w-full">
-                Start Free Trial
-              </Button>
-            </motion.div>
-          </div>
+          ))}
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="text-center py-16 px-6 mt-10">
+        <h2 className="text-3xl font-bold mb-4 text-black">Streamline HR Compliance Today</h2>
+        <p className="max-w-2xl mx-auto mb-6 text-gray-700">
+          Centralize employee records, track employment status, and generate compliant reports effortlessly.
+        </p>
+      </section>
+
+      {/* Link Back to Main Page */}
+      <section className="py-12 text-center">
+        <Link to="/">
+          <Button className="btn-primary text-white px-8 py-3 rounded-xl shadow  transition-all">
+            ← Back to Main Page
+          </Button>
+        </Link>
+      </section>
+
     </div>
   );
-}
+};
+
+export default EmployeeManagement;

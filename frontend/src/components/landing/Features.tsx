@@ -9,7 +9,7 @@ import {
 const features = [
   {
     icon: Users,
-    title: "Employee Management",
+    title: "Employee Records & Compliance",
     description: "Handles employee records, roles, personal details, and employment status in one system.",
     color: "feature-icon-indigo",
     gradient: "from-indigo-500/20 to-purple-500/20",
