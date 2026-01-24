@@ -12,6 +12,7 @@ from groq import Groq
 import PyPDF2
 import docx
 import io
+import httpx
 
 from models import (
     KnowledgeDocument, ChatMessage, ChatRequest, ChatResponse
@@ -31,11 +32,10 @@ qdrant_client = QdrantClient(
     api_key=os.environ.get('QDRANT_API_KEY'),
 )
 
-# Initialize Sentence Transformer for embeddings
-# Using all-MiniLM-L6-v2 which produces 384-dimensional embeddings
-from sentence_transformers import SentenceTransformer
-embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-EMBEDDING_DIM = 384  # Dimension for all-MiniLM-L6-v2
+# OpenAI Embeddings configuration (using Emergent's universal key or user's key)
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
+EMBEDDING_MODEL = "text-embedding-3-small"  # OpenAI's small embedding model
+EMBEDDING_DIM = 1536  # Dimension for text-embedding-3-small
 
 COLLECTION_NAME_PREFIX = "hr_knowledge_"
 
@@ -135,17 +135,45 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
 
 
 def get_embedding(text: str) -> List[float]:
-    """Get semantic embedding using Sentence Transformers"""
+    """Get embedding using OpenAI API (lightweight, no local ML models)"""
     try:
+        if not OPENAI_API_KEY:
+            logger.error("No OpenAI API key configured for embeddings")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Embedding service not configured"
+            )
+        
         # Clean and normalize text
         text = text.strip()[:8000]  # Limit text length
         
-        # Generate embedding using sentence-transformers
-        embedding = embedding_model.encode(text, convert_to_numpy=True)
+        # Call OpenAI embeddings API
+        with httpx.Client(timeout=30.0) as client:
+            response = client.post(
+                "https://api.openai.com/v1/embeddings",
+                headers={
+                    "Authorization": f"Bearer {OPENAI_API_KEY}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": EMBEDDING_MODEL,
+                    "input": text
+                }
+            )
+            
+            if response.status_code != 200:
+                logger.error(f"OpenAI API error: {response.status_code} - {response.text}")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to generate embedding"
+                )
+            
+            data = response.json()
+            embedding = data["data"][0]["embedding"]
+            return embedding
         
-        # Convert to list of floats
-        return embedding.tolist()
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Embedding error: {str(e)}")
         raise HTTPException(
@@ -236,7 +264,7 @@ async def upload_knowledge_document(
         
         await db.knowledge_documents.insert_one(doc.dict())
         
-        # Store chunks in Qdrant with semantic embeddings
+        # Store chunks in Qdrant with OpenAI embeddings
         points = []
         for i, chunk in enumerate(chunks):
             embedding = get_embedding(chunk)
@@ -261,7 +289,7 @@ async def upload_knowledge_document(
             wait=True
         )
         
-        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using semantic embeddings")
+        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using OpenAI embeddings")
         
         return {
             "message": "Document uploaded and processed successfully",
@@ -387,7 +415,7 @@ async def chat(
         user_id = current_user["sub"]
         session_id = request.session_id or str(uuid.uuid4())
         
-        # Get semantic embedding for query
+        # Get embedding for query using OpenAI
         query_embedding = get_embedding(request.message)
         
         # Ensure collection exists
@@ -401,7 +429,7 @@ async def chat(
                 collection_name=collection_name,
                 query=query_embedding,
                 limit=5,
-                score_threshold=0.3,  # Lowered threshold for better recall
+                score_threshold=0.3,
                 with_payload=True
             )
             search_results = results.points if results and results.points else []
@@ -437,7 +465,7 @@ async def chat(
         # Build conversation history for Groq
         conversation = []
         
-        # System prompt - more explicit about using context
+        # System prompt
         system_prompt = """You are an intelligent HR assistant with access to company knowledge documents. 
 Your role is to help HR administrators with questions about company policies, procedures, and employee-related matters.
 
@@ -488,7 +516,7 @@ Note: No documents have been uploaded to the knowledge base yet, or no relevant 
             chat_completion = groq_client.chat.completions.create(
                 messages=conversation,
                 model="llama-3.1-8b-instant",
-                temperature=0.5,  # Lower temperature for more focused answers
+                temperature=0.5,
                 max_tokens=2048,
                 top_p=1,
             )

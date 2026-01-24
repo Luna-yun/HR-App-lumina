@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from pydantic import BaseModel, EmailStr
 from typing import List
 import logging
+import uuid
 from datetime import datetime
 
 from models import (
@@ -666,6 +668,247 @@ async def get_company_stats(
         }
     except Exception as e:
         logger.error(f"Get stats error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred"
+        )
+
+
+
+# Termination reasons enum
+TERMINATION_REASONS = [
+    "Voluntary Resignation",
+    "Performance Issues",
+    "Misconduct",
+    "Redundancy/Layoff",
+    "End of Contract",
+    "Retirement",
+    "Health Reasons",
+    "Relocation",
+    "Other"
+]
+
+class TerminationRequest(BaseModel):
+    reason: str
+    notes: str = ""
+    effective_date: str = ""  # YYYY-MM-DD
+
+class BulkEmployeeCreate(BaseModel):
+    full_name: str
+    email: EmailStr
+    department: str = "Unassigned"
+    job_title: str = ""
+    role: str = "Employee"
+
+class BulkImportRequest(BaseModel):
+    employees: List[BulkEmployeeCreate]
+
+
+@router.post("/admin/employees/{employee_id}/terminate")
+async def terminate_employee(
+    employee_id: str,
+    request: TerminationRequest,
+    current_user: dict = Depends(get_current_admin),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Terminate an employee with reason (Admin only)"""
+    try:
+        employee = await db.users.find_one({"id": employee_id})
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee not found"
+            )
+        
+        if employee["company_id"] != current_user["company_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only terminate employees from your company"
+            )
+        
+        if employee["id"] == current_user["sub"]:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You cannot terminate your own account"
+            )
+        
+        # Create termination record
+        termination_record = {
+            "employee_id": employee_id,
+            "employee_name": employee.get("full_name", employee["email"]),
+            "employee_email": employee["email"],
+            "company_id": employee["company_id"],
+            "reason": request.reason,
+            "notes": request.notes,
+            "effective_date": request.effective_date or datetime.utcnow().strftime("%Y-%m-%d"),
+            "terminated_by": current_user["sub"],
+            "terminated_at": datetime.utcnow()
+        }
+        
+        await db.terminations.insert_one(termination_record)
+        
+        # Deactivate the employee (don't delete for record keeping)
+        await db.users.update_one(
+            {"id": employee_id},
+            {"$set": {
+                "is_active": False,
+                "is_approved": False,
+                "terminated_at": datetime.utcnow(),
+                "termination_reason": request.reason
+            }}
+        )
+        
+        return {
+            "message": f"Employee terminated successfully. Reason: {request.reason}",
+            "effective_date": termination_record["effective_date"]
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Terminate employee error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while terminating employee"
+        )
+
+
+@router.get("/admin/termination-reasons")
+async def get_termination_reasons(current_user: dict = Depends(get_current_admin)):
+    """Get list of termination reasons"""
+    return {"reasons": TERMINATION_REASONS}
+
+
+@router.get("/admin/terminations")
+async def get_termination_history(
+    current_user: dict = Depends(get_current_admin),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Get termination history (Admin only)"""
+    try:
+        terminations = await db.terminations.find({
+            "company_id": current_user["company_id"]
+        }).sort("terminated_at", -1).to_list(100)
+        
+        return {
+            "terminations": [
+                {
+                    "employee_name": t.get("employee_name"),
+                    "employee_email": t.get("employee_email"),
+                    "reason": t.get("reason"),
+                    "notes": t.get("notes", ""),
+                    "effective_date": t.get("effective_date"),
+                    "terminated_at": t.get("terminated_at")
+                }
+                for t in terminations
+            ],
+            "total": len(terminations)
+        }
+    except Exception as e:
+        logger.error(f"Get terminations error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred"
+        )
+
+
+@router.post("/admin/employees/bulk-import")
+async def bulk_import_employees(
+    request: BulkImportRequest,
+    current_user: dict = Depends(get_current_admin),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Bulk import employees (Admin only)"""
+    try:
+        company_id = current_user["company_id"]
+        company_name = current_user.get("company_name", "")
+        
+        # Get company name if not in token
+        if not company_name:
+            company = await db.companies.find_one({"id": company_id})
+            company_name = company["name"] if company else ""
+        
+        created = []
+        skipped = []
+        
+        for emp in request.employees:
+            # Check if email exists
+            existing = await db.users.find_one({"email": emp.email})
+            if existing:
+                skipped.append({"email": emp.email, "reason": "Email already exists"})
+                continue
+            
+            # Generate temporary password
+            temp_password = f"Temp@{uuid.uuid4().hex[:8].capitalize()}"
+            
+            # Create user
+            new_user = User(
+                email=emp.email,
+                password_hash=hash_password(temp_password),
+                role=emp.role if emp.role in [UserRole.ADMIN, UserRole.EMPLOYEE] else UserRole.EMPLOYEE,
+                company_id=company_id,
+                company_name=company_name,
+                full_name=emp.full_name,
+                department=emp.department,
+                job_title=emp.job_title,
+                is_verified=True,
+                is_approved=True,  # Auto-approve bulk imported employees
+            )
+            
+            await db.users.insert_one(new_user.dict())
+            created.append({
+                "email": emp.email,
+                "full_name": emp.full_name,
+                "temp_password": temp_password  # In real app, would email this
+            })
+        
+        return {
+            "message": f"Imported {len(created)} employees, skipped {len(skipped)}",
+            "created": created,
+            "skipped": skipped
+        }
+    
+    except Exception as e:
+        logger.error(f"Bulk import error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred during bulk import"
+        )
+
+
+@router.put("/admin/employees/{employee_id}/department")
+async def assign_employee_to_department(
+    employee_id: str,
+    department: str,
+    current_user: dict = Depends(get_current_admin),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Assign an employee to a department (Admin only)"""
+    try:
+        employee = await db.users.find_one({"id": employee_id})
+        if not employee:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Employee not found"
+            )
+        
+        if employee["company_id"] != current_user["company_id"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only update employees from your company"
+            )
+        
+        await db.users.update_one(
+            {"id": employee_id},
+            {"$set": {"department": department, "updated_at": datetime.utcnow()}}
+        )
+        
+        return {"message": f"Employee assigned to {department}"}
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Assign department error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred"

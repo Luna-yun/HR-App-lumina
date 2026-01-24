@@ -10,6 +10,20 @@ Build a comprehensive HR management application by merging functionalities and d
 
 ### ✅ Completed Features
 
+#### Performance & Task Management System (Jan 24, 2026)
+- [x] **Backend**: Created `performance_routes.py` with full CRUD for tasks and performance reviews
+- [x] **Task Assignment**: Admins can assign tasks to employees with priority, due date, category
+- [x] **Performance Reviews**: Admins can create reviews with scores (quality, productivity, teamwork, communication)
+- [x] **Analytics Endpoint**: `/api/admin/analytics/performance` returns task/review stats and top performers
+- [x] **Employee Tasks**: Employees can view and update status of their assigned tasks
+- [x] **Notifications**: Tasks and reviews trigger automatic notifications to employees
+
+#### Employee Management Features (Jan 24, 2026)
+- [x] **Employee Termination**: Terminate employees with reason dropdown and notes
+- [x] **Termination Reasons**: Configurable list (Voluntary Resignation, Performance Issues, etc.)
+- [x] **Department Assignment**: Assign employees to departments from the employee list
+- [x] **Bulk Import**: Import multiple employees via CSV format (name, email, department, job_title)
+
 #### AI Chat RAG System Fix (Jan 20, 2026)
 - [x] **Fixed Embedding System** - Replaced hash-based pseudo-embeddings with proper semantic embeddings using `sentence-transformers/all-MiniLM-L6-v2`
 - [x] **Fixed Qdrant API** - Updated from deprecated `.search()` to `.query_points()` method

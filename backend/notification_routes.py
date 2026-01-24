@@ -56,13 +56,13 @@ async def get_notifications(
     try:
         db = get_db()
         user_id = current_user.get("sub")
-        company_name = current_user.get("company_name")
+        company_id = current_user.get("company_id")
         
         # Build query - notifications for this user or company-wide
         query = {
             "$or": [
                 {"target_user_id": user_id},
-                {"target_user_id": None, "company_id": company_name}
+                {"target_user_id": None, "company_id": company_id}
             ]
         }
         

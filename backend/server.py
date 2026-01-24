@@ -121,6 +121,17 @@ async def create_indexes():
         await db.notifications.create_index([("company_id", 1), ("is_read", 1)])
         await db.notifications.create_index("created_at")
         
+        # Tasks collection indexes
+        await db.tasks.create_index([("company_id", 1), ("assigned_to", 1)])
+        await db.tasks.create_index([("assigned_to", 1), ("status", 1)])
+        
+        # Performance reviews collection indexes
+        await db.performance_reviews.create_index([("company_id", 1), ("employee_id", 1)])
+        await db.performance_reviews.create_index("employee_id")
+        
+        # Terminations collection indexes
+        await db.terminations.create_index("company_id")
+        
         logger.info("Database indexes created successfully")
     except Exception as e:
         logger.warning(f"Error creating indexes: {str(e)}")
@@ -135,6 +146,7 @@ from department_routes import router as department_router
 from recruitment_routes import router as recruitment_router
 from ai_chat_routes import router as ai_chat_router
 from notification_routes import router as notification_router
+from performance_routes import router as performance_router
 
 app.include_router(auth_router, prefix="/api", tags=["Authentication"])
 app.include_router(attendance_router, prefix="/api", tags=["Attendance"])
@@ -145,6 +157,7 @@ app.include_router(department_router, prefix="/api", tags=["Departments"])
 app.include_router(recruitment_router, prefix="/api", tags=["Recruitment"])
 app.include_router(ai_chat_router, prefix="/api", tags=["AI Chat"])
 app.include_router(notification_router, prefix="/api", tags=["Notifications"])
+app.include_router(performance_router, prefix="/api", tags=["Performance"])
 
 # Health check endpoint
 @app.get("/api/health")

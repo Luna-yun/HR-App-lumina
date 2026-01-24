@@ -37,7 +37,7 @@ const contactMethods = [
     icon: MapPin,
     title: "Visit Us",
     description: "Our headquarters",
-    value: "San Francisco, CA",
+    value: "Parami Street, Hlaing, Yangon",
     href: "#",
     gradient: "from-amber-500/20 to-orange-500/20",
   },

@@ -486,4 +486,250 @@ export const notificationAPI = {
   },
 };
 
+// ==================
+// Task APIs
+// ==================
+
+export const taskAPI = {
+  // Admin
+  createTask: async (data: {
+    title: string;
+    description?: string;
+    assigned_to: string;
+    due_date?: string;
+    priority?: string;
+    category?: string;
+  }): Promise<{ id: string; message: string }> => {
+    const response = await api.post('/admin/tasks', data);
+    return response.data;
+  },
+
+  getAllTasks: async (employeeId?: string, status?: string): Promise<{
+    tasks: Array<{
+      id: string;
+      title: string;
+      description: string;
+      assigned_to: string;
+      assigned_to_name: string;
+      assigned_by: string;
+      assigned_by_name: string;
+      status: string;
+      priority: string;
+      category: string;
+      due_date?: string;
+      completed_at?: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> => {
+    const params = new URLSearchParams();
+    if (employeeId) params.append('employee_id', employeeId);
+    if (status) params.append('status_filter', status);
+    const response = await api.get(`/admin/tasks?${params.toString()}`);
+    return response.data;
+  },
+
+  deleteTask: async (taskId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/admin/tasks/${taskId}`);
+    return response.data;
+  },
+
+  // Employee
+  getMyTasks: async (status?: string): Promise<{
+    tasks: Array<{
+      id: string;
+      title: string;
+      description: string;
+      assigned_to: string;
+      assigned_to_name: string;
+      assigned_by: string;
+      assigned_by_name: string;
+      status: string;
+      priority: string;
+      category: string;
+      due_date?: string;
+      completed_at?: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> => {
+    const params = status ? `?status_filter=${status}` : '';
+    const response = await api.get(`/tasks/my${params}`);
+    return response.data;
+  },
+
+  updateTask: async (taskId: string, data: {
+    title?: string;
+    description?: string;
+    status?: string;
+    priority?: string;
+    due_date?: string;
+  }): Promise<{ message: string }> => {
+    const response = await api.put(`/tasks/${taskId}`, data);
+    return response.data;
+  },
+};
+
+// ==================
+// Performance APIs
+// ==================
+
+export const performanceAPI = {
+  // Admin
+  createReview: async (data: {
+    employee_id: string;
+    review_period: string;
+    goals_achieved: number;
+    quality_score: number;
+    productivity_score: number;
+    teamwork_score: number;
+    communication_score: number;
+    feedback?: string;
+    strengths?: string;
+    areas_for_improvement?: string;
+    goals_for_next_period?: string;
+  }): Promise<{ id: string; message: string }> => {
+    const response = await api.post('/admin/performance-reviews', data);
+    return response.data;
+  },
+
+  getAllReviews: async (employeeId?: string): Promise<{
+    reviews: Array<{
+      id: string;
+      employee_id: string;
+      employee_name: string;
+      reviewer_id: string;
+      reviewer_name: string;
+      review_period: string;
+      goals_achieved: number;
+      quality_score: number;
+      productivity_score: number;
+      teamwork_score: number;
+      communication_score: number;
+      overall_score: number;
+      feedback: string;
+      strengths: string;
+      areas_for_improvement: string;
+      goals_for_next_period: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> => {
+    const params = employeeId ? `?employee_id=${employeeId}` : '';
+    const response = await api.get(`/admin/performance-reviews${params}`);
+    return response.data;
+  },
+
+  getAnalytics: async (): Promise<{
+    reviews: {
+      total: number;
+      avg_overall_score: number;
+      avg_goals_achieved: number;
+      score_distribution: {
+        excellent: number;
+        good: number;
+        average: number;
+        needs_improvement: number;
+      };
+    };
+    tasks: {
+      total: number;
+      completed: number;
+      pending: number;
+      in_progress: number;
+      completion_rate: number;
+    };
+    top_performers: Array<{
+      id: string;
+      name: string;
+      avg_score: number;
+    }>;
+  }> => {
+    const response = await api.get('/admin/analytics/performance');
+    return response.data;
+  },
+
+  // Employee
+  getMyReviews: async (): Promise<{
+    reviews: Array<{
+      id: string;
+      employee_id: string;
+      employee_name: string;
+      reviewer_id: string;
+      reviewer_name: string;
+      review_period: string;
+      goals_achieved: number;
+      quality_score: number;
+      productivity_score: number;
+      teamwork_score: number;
+      communication_score: number;
+      overall_score: number;
+      feedback: string;
+      strengths: string;
+      areas_for_improvement: string;
+      goals_for_next_period: string;
+      created_at: string;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get('/performance-reviews/my');
+    return response.data;
+  },
+};
+
+// ==================
+// Termination & Bulk Import APIs
+// ==================
+
+export const employeeManagementAPI = {
+  terminateEmployee: async (employeeId: string, data: {
+    reason: string;
+    notes?: string;
+    effective_date?: string;
+  }): Promise<{ message: string; effective_date: string }> => {
+    const response = await api.post(`/admin/employees/${employeeId}/terminate`, data);
+    return response.data;
+  },
+
+  getTerminationReasons: async (): Promise<{ reasons: string[] }> => {
+    const response = await api.get('/admin/termination-reasons');
+    return response.data;
+  },
+
+  getTerminationHistory: async (): Promise<{
+    terminations: Array<{
+      employee_name: string;
+      employee_email: string;
+      reason: string;
+      notes: string;
+      effective_date: string;
+      terminated_at: string;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get('/admin/terminations');
+    return response.data;
+  },
+
+  bulkImportEmployees: async (employees: Array<{
+    full_name: string;
+    email: string;
+    department?: string;
+    job_title?: string;
+    role?: string;
+  }>): Promise<{
+    message: string;
+    created: Array<{ email: string; full_name: string; temp_password: string }>;
+    skipped: Array<{ email: string; reason: string }>;
+  }> => {
+    const response = await api.post('/admin/employees/bulk-import', { employees });
+    return response.data;
+  },
+
+  assignDepartment: async (employeeId: string, department: string): Promise<{ message: string }> => {
+    const response = await api.put(`/admin/employees/${employeeId}/department?department=${encodeURIComponent(department)}`);
+    return response.data;
+  },
+};
+
 export default api;
