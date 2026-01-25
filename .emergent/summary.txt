@@ -1,400 +1,238 @@
-<analysis>**original_problem_statement:** The user wants to build a comprehensive HR management application by merging functionalities and designs from two separate GitHub repositories:  for backend logic and landing page aesthetics, and  for premium dashboard UI. The final brand name is Lumina.
+<analysis>**original_problem_statement:** The user wants to build a comprehensive HR management application named Lumina by merging functionalities and designs from two separate GitHub repositories. The backend logic and landing page are from , while the premium dashboard UI is inspired by .
 
 **PRODUCT REQUIREMENTS:**
-1.  **Backend:** Use the FastAPI backend from  but connect it to the new frontend.
-2.  **Dashboards:** Implement high-quality, professional Admin and Employee dashboards based on the UI from the  repository. The dashboards must be world-class, interactive, immersive, and feature micro-animations.
+1.  **Backend:** Use the FastAPI backend from  and connect it to the new frontend.
+2.  **Dashboards:** Implement high-quality, professional Admin and Employee dashboards with a world-class, interactive, and immersive UI featuring micro-animations.
 3.  **Authentication UI:** Redesigned login (Email/Password) and signup pages.
 4.  **Landing Page:** An exact replica of the  landing page.
-5.  **Sub-Pages:** Implement all specified sub-pages for both Admin and Employee roles.
-6.  **Animations:** Incorporate GSAP and  for a premium user experience with smooth scrolling.
-7.  **AI Chatbot:** Implement an AI chat feature for HR Admins using Groq and Qdrant (RAG). It must support  and  file uploads, document deletion, and chat history. A detailed  file explaining the implementation is required.
+5.  **AI Chatbot (RAG):** Implement an AI chat feature for HR Admins using Groq for inference and a vector database (Qdrant) for Retrieval-Augmented Generation. It must support file uploads, document deletion, and chat history.
+6.  **Employee Management:**
+    *   Allow admins to approve new employee registrations.
+    *   Assign employees to departments.
+    *   Terminate employees with a reason.
+    *   Bulk-import employees via file upload.
+7.  **Performance Management:** Allow admins to assign tasks to employees and conduct performance reviews.
 8.  **Notifications:** Implement a real-time notification system for both admin and employee users.
-9.  **Profile Pages:** Improve the profile pages for both admin and employee dashboards.
-10. **UI/UX:** Pop-ups must be premium and centered correctly on all devices. The entire application must be mobile-responsive.
-11. **Documentation:** Update  files with a business pitch and guides for local testing and deployment.
+9.  **Documentation:** Create detailed technical documentation (, ) explaining the RAG system and database architecture.
 
 **User's preferred language**: English
 
 **what currently exists?**
-The backend is a complete FastAPI application with all required endpoints, including a newly added notification system. The frontend features a fully replicated, premium landing page that is visually complete and responsive. The agent has also completed a major overhaul of the Admin and Employee dashboards, AI Chat interface, and profile pages to match a world-class design aesthetic inspired by the Able Pro template. However, these new dashboards are currently not rendering due to a frontend bug, resulting in a blank screen after login.
+The application is a full-stack HR platform. The frontend features a complete landing page, redesigned admin/employee dashboards, and scaffolded UI for new features like performance analytics and employee management. The backend has most of the required API endpoints, including a RAG system for the AI chatbot, authentication, notifications, and new routes for performance and employee termination. The critical blank screen after login blocker has been resolved, and all pop-up dialogs are now correctly centered. However, the RAG system and several UI components are currently broken.
 
 **Last working item**:
-- **Last item agent was working:** The agent was trying to resolve a blank screen issue that appeared after a major redesign of the dashboard components and fixing a bug with environment variables. The login API call was failing due to an incorrect variable prefix ( instead of Vite's ). After fixing this, the dashboard appeared briefly but then subsequent navigation attempts resulted in a blank or login page, indicating a session management or routing problem.
+- **Last item agent was working:** The agent was investigating why the AI Chat (RAG) feature was failing with the error . The agent correctly deduced that the previously configured  cannot be used for direct API calls to OpenAI and that the  library must be used instead. The agent had requested the integration playbook for openai embeddings but received a generic response and was about to search for the correct implementation method.
 - **Status:** BLOCKED
-- **Agent Testing Done:** N (Agent attempted screenshots but was met with a blank page).
-- **Which testing method agent to use?** Manual testing by  is needed to verify user creation and login API calls. Then, use the screenshot tool to debug the frontend rendering issue. Once the UI is stable, use the frontend testing agent.
+- **Agent Testing Done:** N
+- **Which testing method agent to use?** Backend testing agent to verify the embedding API calls after the fix. Manual testing with  to test the entire RAG flow (upload, query).
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1: Blank Screen After Login (P0)**: The application shows a blank page after a successful login attempt, preventing access to any dashboard pages. This is the highest priority blocker.
-- **Issue 2: AI Chat Document Upload Failure (P1)**: The document upload for the RAG chatbot was failing with a Qdrant  format error. An attempted fix has been applied to the backend but remains untested.
-- **Issue 3: Improperly Aligned Pop-ups (P2)**: User reported that pop-ups (modals/dialogs) are not centered and display incorrectly, especially on mobile. The agent has applied a fix using collision detection in Shadcn components, which needs verification.
+- **Issue 1: AI Chat RAG System Failure (P0)**: The core RAG functionality is broken. Both document upload and chat queries fail with a 500 Internal Server Error, responding . This is the highest priority issue.
+- **Issue 2: Non-Functional Dropdowns in Dialogs (P1)**: Dropdown menus (e.g., Select Department, Select Employee) inside pop-up dialogs are not working. They render underneath the dialog modal due to a  conflict, making them un-clickable.
+- **Issue 3: Missing Employee Approval UI (P1)**: New employees can register, but there is no UI button or mechanism in the admin dashboard for an administrator to approve their accounts, preventing them from logging in.
 
 **Issues Detail:**
-- **Issue 1: Blank Screen After Login**
-    - **Attempted fixes:**
-        1. Corrected  import paths in dashboard components.
-        2. Fixed the frontend environment variable prefix in  (from  to ) and updated .
-        These fixes allowed the dashboard to render once, but the issue persists on subsequent navigations, suggesting a problem with routing, authentication state management (), or component rendering.
+- **Issue 1: AI Chat RAG System Failure**
+    - **Attempted fixes:** The agent refactored the backend from using a local  model to the OpenAI embeddings API to resolve deployment issues. It added the  to the environment variables. This fix introduced the current Failed to generate embedding error.
     - **Next debug checklist:**
-        1. Check the browser's developer console for any runtime errors on the blank page.
-        2. Inspect  and the routing logic. Ensure protected routes are handling authentication state correctly.
-        3. Verify the  is correctly storing and retrieving the user session and token from .
-        4. Simplify the  component temporarily to isolate if a specific sub-component is causing the crash.
-    - **Why fix this issue and what will be achieved with the fix?** This is a critical blocker. Fixing it will restore access to the entire dashboard section of the application, unblocking all other frontend development and testing.
+        1.  Do not use the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit library directly. Call the  subagent for **OpenAI Embeddings with Emergent LLM Key** to get the correct playbook.
+        2.  Refactor  to use the  library for generating embeddings as specified in the playbook.
+        3.  Verify the  is correctly passed to the integration library function.
+        4.  Test the fix by uploading a new document and asking a question related to its content.
+    - **Why fix this issue and what will be achieved with the fix?** This will restore the core functionality of the AI Chatbot, which is a key product requirement.
     - **Status:** IN PROGRESS
-    - **Is recurring issue?** Y
+    - **Is recurring issue?** Y (The RAG system has failed for different reasons before).
+    - **Should Test frontend/backend/both after fix?** Backend.
+    - **Blocked on other issue:** None.
+
+- **Issue 2: Non-Functional Dropdowns in Dialogs**
+    - **Attempted fixes:** The agent correctly identified the  conflict between the  component () and the  component (). It attempted a fix by editing , but this has not been verified.
+    - **Next debug checklist:**
+        1.  Inspect the  component in .
+        2.  Ensure that when the select is open, its  is higher than the dialog's  (e.g., ).
+        3.  Verify the fix on the Assign Department dialog within the  page.
+        4.  Check other dialogs that contain dropdowns, like Create Performance Review.
+    - **Why fix this issue and what will be achieved with the fix?** This will restore critical functionality for assigning departments, creating performance reviews, and other actions that rely on dropdowns within modals.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Frontend.
     - **Blocked on other issue:** None.
 
-- **Issue 2: AI Chat Document Upload Failure**
-    - **Attempted fixes:** In , the agent modified the payload for  to wrap the vector in a dictionary () and changed the search method from  to .
+- **Issue 3: Missing Employee Approval UI**
+    - **Attempted fixes:** The agent started overhauling the  page to include an Approve button for unapproved users but did not complete or test the implementation.
     - **Next debug checklist:**
-        1. Once the dashboard is accessible, navigate to the AI Chat page.
-        2. Attempt to upload a  or  file.
-        3. Check the backend logs (==> /var/log/supervisor/backend.err.log <==
-    from auth_utils import get_current_user, UserInDB
-ImportError: cannot import name 'UserInDB' from 'auth_utils' (/app/backend/auth_utils.py)
-WARNING:  WatchFiles detected changes in 'server.py'. Reloading...
-2026-01-20 13:14:13,613 - httpx - INFO - HTTP Request: GET https://41f8b930-689a-4dfe-9528-fdf350a3d326.europe-west3-0.gcp.cloud.qdrant.io:6333 "HTTP/1.1 200 OK"
-Process SpawnProcess-7:
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
-    target(sockets=sockets)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 67, in run
-    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/_compat.py", line 30, in asyncio_run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 71, in serve
-    await self._serve(sockets)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 78, in _serve
-    config.load()
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 439, in load
-    self.loaded_app = import_from_string(self.app)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
-    module = importlib.import_module(module_str)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/app/backend/server.py", line 137, in <module>
-    from notification_routes import router as notification_router
-  File "/app/backend/notification_routes.py", line 14, in <module>
-    from auth_utils import get_current_user, UserInDB
-ImportError: cannot import name 'UserInDB' from 'auth_utils' (/app/backend/auth_utils.py)
-INFO:     Stopping reloader process [47]
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [6660] using WatchFiles
-2026-01-20 13:18:43,209 - httpx - INFO - HTTP Request: GET https://41f8b930-689a-4dfe-9528-fdf350a3d326.europe-west3-0.gcp.cloud.qdrant.io:6333 "HTTP/1.1 200 OK"
-Process SpawnProcess-1:
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 314, in _bootstrap
-    self.run()
-  File "/usr/local/lib/python3.11/multiprocessing/process.py", line 108, in run
-    self._target(*self._args, **self._kwargs)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
-    target(sockets=sockets)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 67, in run
-    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/_compat.py", line 30, in asyncio_run
-    return runner.run(main)
-           ^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/runners.py", line 118, in run
-    return self._loop.run_until_complete(task)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/asyncio/base_events.py", line 654, in run_until_complete
-    return future.result()
-           ^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 71, in serve
-    await self._serve(sockets)
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/server.py", line 78, in _serve
-    config.load()
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/config.py", line 439, in load
-    self.loaded_app = import_from_string(self.app)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/root/.venv/lib/python3.11/site-packages/uvicorn/importer.py", line 19, in import_from_string
-    module = importlib.import_module(module_str)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/importlib/__init__.py", line 126, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1204, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1176, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1147, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 690, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 940, in exec_module
-  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
-  File "/app/backend/server.py", line 137, in <module>
-    from notification_routes import router as notification_router
-  File "/app/backend/notification_routes.py", line 14, in <module>
-    from auth_utils import get_current_user, UserInDB
-ImportError: cannot import name 'UserInDB' from 'auth_utils' (/app/backend/auth_utils.py)
-INFO:     Will watch for changes in these directories: ['/app/backend']
-INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
-INFO:     Started reloader process [48] using WatchFiles
-
-==> /var/log/supervisor/backend.out.log <==
-INFO:     10.64.135.153:54978 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.130.211:48164 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.133.150:60592 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.133.151:51916 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.135.153:44456 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.130.211:37824 - "GET /api/departments HTTP/1.1" 200 OK
-INFO:     10.64.130.209:39206 - "GET /api/health HTTP/1.1" 200 OK
-INFO:     10.64.131.205:50752 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.133.150:52924 - "POST /api/auth/login HTTP/1.1" 401 Unauthorized
-INFO:     10.64.133.150:52924 - "POST /api/auth/login HTTP/1.1" 422 Unprocessable Entity
-INFO:     10.64.131.203:57348 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40602 - "GET /api/auth/me HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53128 - "GET /api/auth/me HTTP/1.1" 403 Forbidden
-INFO:     10.64.129.6:33076 - "GET /api/companies HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53128 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.135.151:45208 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.133.150:52924 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.130.209:39206 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.135.153:43778 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53128 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.133.151:45134 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.7:57566 - "GET /api/departments HTTP/1.1" 200 OK
-INFO:     10.64.130.211:37834 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40602 - "POST /api/admin/departments HTTP/1.1" 200 OK
-INFO:     10.64.135.153:43778 - "GET /api/departments HTTP/1.1" 200 OK
-INFO:     10.64.131.205:54712 - "DELETE /api/admin/departments/41cb445a-252e-4892-88f3-4d76ea139862 HTTP/1.1" 200 OK
-INFO:     10.64.131.205:54712 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.133.150:52924 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.133.150:52924 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.133.151:45134 - "GET /api/admin/leave/all HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40602 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.203:49490 - "GET /api/attendance/my-status HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53128 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.133.151:45134 - "GET /api/attendance/my-history?limit=30 HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53128 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.7:57576 - "GET /api/admin/attendance HTTP/1.1" 200 OK
-INFO:     10.64.133.151:45134 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.203:49490 - "GET /api/salary/mine HTTP/1.1" 200 OK
-INFO:     10.64.129.7:57576 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.203:49490 - "GET /api/salary/my-history?limit=12 HTTP/1.1" 200 OK
-INFO:     10.64.135.151:37536 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.202:43410 - "GET /api/admin/salaries HTTP/1.1" 200 OK
-INFO:     10.64.130.211:51110 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.135.151:37536 - "GET /api/admin/chat/documents HTTP/1.1" 200 OK
-INFO:     10.64.131.206:41750 - "GET /api/notices?limit=50 HTTP/1.1" 200 OK
-INFO:     10.64.130.209:48796 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.9:35546 - "POST /api/admin/notices HTTP/1.1" 200 OK
-INFO:     10.64.133.151:45134 - "DELETE /api/admin/notices/413a707d-8d23-4b22-9ac6-de6deeb42aa6 HTTP/1.1" 200 OK
-INFO:     10.64.131.202:43410 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.135.151:37536 - "GET /api/admin/jobs HTTP/1.1" 200 OK
-INFO:     10.64.129.9:35546 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.205:41740 - "GET /api/admin/recruitment/stats HTTP/1.1" 200 OK
-INFO:     10.64.131.206:41750 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.206:41750 - "GET /api/admin/chat/documents HTTP/1.1" 200 OK
-INFO:     10.64.129.7:47448 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.131.202:43410 - "POST /api/admin/chat HTTP/1.1" 200 OK
-INFO:     10.64.133.151:56056 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.130.209:40864 - "GET /api/admin/chat/history?limit=50 HTTP/1.1" 200 OK
-INFO:     10.64.135.151:47530 - "POST /api/auth/signup HTTP/1.1" 422 Unprocessable Entity
-INFO:     10.64.129.6:57900 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.129.9:40020 - "GET /api/admin/salaries HTTP/1.1" 200 OK
-INFO:     10.64.129.7:51312 - "GET /api/admin/notices/all?include_inactive=false HTTP/1.1" 200 OK
-INFO:     10.64.129.9:42422 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.6:38550 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.129.6:38540 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.129.8:50654 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.129.6:45936 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.129.7:56414 - "GET /api/admin/salaries HTTP/1.1" 200 OK
-INFO:     10.64.129.9:56364 - "POST /api/auth/login HTTP/1.1" 200 OK
-INFO:     10.64.129.8:57558 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.129.7:43624 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.129.8:57550 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.129.7:46274 - "GET /api/admin/chat/documents HTTP/1.1" 200 OK
-INFO:     10.64.129.6:37760 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.129.6:37772 - "GET /api/admin/leave/all HTTP/1.1" 200 OK
-INFO:     10.64.131.206:48288 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.131.206:48294 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.131.205:56904 - "GET /api/departments HTTP/1.1" 200 OK
-INFO:     10.64.131.202:60876 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.131.204:59018 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.131.203:35290 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.129.8:53356 - "GET /api/admin/salaries HTTP/1.1" 200 OK
-INFO:     10.64.129.6:42810 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.131.206:49696 - "GET /api/admin/attendance/stats HTTP/1.1" 200 OK
-INFO:     10.64.131.204:40944 - "GET /api/admin/attendance?date_filter=2026-01-20 HTTP/1.1" 200 OK
-INFO:     10.64.131.204:56640 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.131.202:47070 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.131.203:57716 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.131.202:47084 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.131.206:58480 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.131.202:47092 - "GET /api/departments HTTP/1.1" 200 OK
-INFO:     10.64.131.206:58480 - "GET /api/admin/attendance/stats HTTP/1.1" 200 OK
-INFO:     10.64.131.205:34700 - "GET /api/admin/attendance?date_filter=2026-01-20 HTTP/1.1" 200 OK
-INFO:     10.64.131.206:58480 - "GET /api/admin/salaries HTTP/1.1" 200 OK
-INFO:     10.64.131.203:47196 - "GET /api/admin/employees HTTP/1.1" 200 OK
-INFO:     10.64.129.6:34036 - "GET /api/admin/pending-employees HTTP/1.1" 200 OK
-INFO:     10.64.129.7:59056 - "GET /api/admin/leave/pending HTTP/1.1" 200 OK
-INFO:     10.64.129.8:59620 - "GET /api/admin/stats HTTP/1.1" 200 OK
-INFO:     10.64.133.151:60696 - "GET /api/admin/attendance?date_filter=2026-01-20 HTTP/1.1" 200 OK
-INFO:     10.64.135.153:57630 - "GET /api/admin/attendance/stats HTTP/1.1" 200 OK) for any Qdrant-related errors.
-    - **Why fix this issue and what will be achieved with the fix?** This will complete a core feature of the AI Chatbot (RAG functionality).
-    - **Status:** TESTING PENDING
+        1.  In , modify the rendering logic for each employee card/row.
+        2.  If an employee has , display an Approve button.
+        3.  The Approve button should call the  function from .
+        4.  Upon successful API response, the UI should update to show the employee as approved (e.g., remove the button, show an Active status).
+    - **Why fix this issue and what will be achieved with the fix?** This will complete the employee registration workflow, allowing admins to manage new sign-ups.
+    - **Status:** IN PROGRESS
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Both.
-    - **Blocked on other issue:** Issue 1: Blank Screen After Login.
-
-- **Issue 3: Improperly Aligned Pop-ups**
-    - **Attempted fixes:** The agent edited  and  to add  and set the side to  to prevent content from going off-screen.
-    - **Next debug checklist:**
-        1. Once dashboards are working, trigger an action that opens a dialog or dropdown (e.g., in  or ).
-        2. Verify the pop-up is centered on desktop.
-        3. Use the screenshot tool with mobile dimensions to verify it renders correctly on smaller screens.
-    - **Why fix this issue and what will be achieved with the fix?** To resolve a significant UI/UX bug and meet the user's requirement for a premium, responsive interface.
-    - **Status:** TESTING PENDING
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend.
-    - **Blocked on other issue:** Issue 1: Blank Screen After Login.
+    - **Blocked on other issue:** None.
 
 **In progress Task List**:
-- **Task 1: Implement and Test Notification System**
-    - **Where to resume:** The backend  and frontend API service have been created. The UI has been added to the new profile pages. The next step is to test the entire flow: trigger a notification from a backend event, fetch it on the frontend, and display it in the UI.
-    - **What will be achieved with this?** A fully functional notification system as requested by the user.
-    - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Both.
-    - **Blocked on something:** Issue 1: Blank Screen After Login.
+- None.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **(P1) Complete Remaining Dashboard Pages:** Implement the premium design for all other admin and employee sub-pages (Leaves, Attendance, Payroll, etc.) to match the new  and  aesthetic.
-    - **(P1) Test Document Deletion in AI Chat:** Verify that the delete document functionality in the  interface correctly calls the backend  endpoint and removes the document from Qdrant.
-    - **(P2) Write  Documentation:** Populate  with a detailed, technical explanation of the RAG/CAG implementation suitable for an academic paper.
+    - **(P0) Add Document Deletion UI:** Implement a Delete button for each document in the AI Chat's knowledge base UI () that calls the corresponding backend endpoint.
+    - **(P1) Implement RAG Process Indicator:** Add toasts or a status indicator in the UI to show the user the steps of document processing (e.g., Uploading, Chunking, Generating Embeddings, Done) and chat response generation (Searching knowledge base, Thinking...).
+    - **(P1) Improve Assign Department UX:** Move the Assign Department action from the  menu to be directly visible on the employee card in .
+    - **(P2) Write Technical Documentation:** Create  and  in the  directory with detailed explanations of the RAG system and database schema, suitable for a technical paper.
 - **Future Tasks:**
     - Implement GSAP/anime.js micro-interactions across all remaining dashboard components.
-    - Conduct a full regression test of the entire application once all features are implemented.
+    - Conduct a full regression test of the entire application.
+    - Fix the ESLint configuration for TypeScript in the frontend.
 
 **Completed work in this session**
-- **Landing Page Replication (DONE):** Successfully replicated the landing page from , including all components, feature pages, styling, and responsiveness.
-- **Branding Update (DONE):** Renamed the brand to Lumina across the app and updated the favicon.
-- **Premium Dashboard Overhaul (IN PROGRESS - BLOCKED):**
-    - Overwrote , , , , and  with new, premium designs.
-    - Installed and integrated  for animations.
-- **Notification System Scaffolding (DONE):** Created backend routes (), registered them in , and added frontend service calls in .
-- **Documentation (DONE):** Created/updated  files for root, frontend, and backend with a business pitch and setup guides. Created placeholder .
-- **UI Bug Fixes (IN PROGRESS - TESTING PENDING):** Applied fixes for pop-up alignment issues.
-
-**Earlier issues found/mentioned but not fixed**
--   The agent identified numerous ESLint parsing errors but dismissed them as a linter configuration issue. While the app compiled, these could mask underlying problems and should be properly configured for TypeScript.
+- **Blank Screen Blocker (DONE):** Fixed the backend crash caused by an  in , restoring access to all dashboards.
+- **Dialog Centering (DONE):** Fixed a CSS transform conflict, ensuring all pop-up dialogs are correctly centered on both desktop and mobile.
+- **WYSIWYG Editor (DONE):** Integrated the TipTap rich text editor into the Add Notice dialog.
+- **RAG System Refactor (IN PROGRESS - BLOCKED):**
+    - Replaced a non-functional hash-based embedding with a local Sentence Transformers model.
+    - Replaced the local model with the OpenAI embeddings API to resolve deployment issues, which introduced a new bug.
+- **New Feature Scaffolding (DONE):**
+    - Created backend endpoints for employee termination, bulk import, and performance reviews (, ).
+    - Created frontend pages/components for employee management () and performance analytics ().
 
 **Known issue recurrence from previous fork**
-- None.
+- The RAG system has failed multiple times due to different root causes (bad embedding logic, outdated client library, incorrect API usage).
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Frontend:** React, TypeScript, Vite, TailwindCSS, Shadcn UI, GSAP, **anime.js**, TanStack Router.
-*   **Backend:** FastAPI, Python, Motor (async MongoDB driver).
-*   **Database:** MongoDB Atlas.
-*   **Authentication:** JWT.
-*   **AI/LLM:** Groq API, Qdrant (RAG).
+*   **Frontend:** React, TypeScript, Vite, TailwindCSS, Shadcn UI, 
+*   **Backend:** FastAPI, Python, Motor (async MongoDB driver)
+*   **Database:** MongoDB Atlas
+*   **Authentication:** JWT
+*   **AI/LLM:** Groq (LLM Inference), OpenAI API (Embeddings), Qdrant (Vector Store),  (Required for Embeddings)
 
 **key DB schema**
-*   **User:** 
-*   **Notification:**  (New)
-*   (Other schemas remain the same)
-
-**changes in tech stack**
-*   **Animation:**  was added to the frontend stack alongside .
-*   **Frontend Environment Variables:** Switched to using the  prefix for environment variables to comply with Vite's standards.
+-   **Task:**  (New)
+-   **PerformanceReview:**  (New)
 
 **All files of reference**
-*   **/app/frontend/src/services/api.ts**: Updated to use  prefix for the backend URL and add notification APIs.
-*   **/app/frontend/.env**: Updated with .
-*   **/app/frontend/src/pages/admin/** & **/app/frontend/src/pages/employee/**: Key dashboard and profile pages were overwritten with new premium designs.
-*   **/app/frontend/src/components/dashboard/DashboardLayout.tsx**: Overwritten with a new premium layout.
-*   **/app/frontend/src/components/ui/dialog.tsx**, **dropdown-menu.tsx**: Edited to improve positioning and collision detection.
-*   **/app/backend/ai_chat_routes.py**: Edited to fix a Qdrant vector format error.
-*   **/app/backend/notification_routes.py**, **/app/backend/chat.md**: New files created.
-*   **/app/backend/server.py**: Updated to include the new notification router.
-*   **/app/README.md**, **/app/frontend/README.md**, **/app/backend/README.md**: Created or overwritten with new content.
-
-**Areas that need refactoring**:
-*   The ESLint configuration in  needs to be fixed to properly parse TypeScript, which will help catch potential errors and improve code quality.
-
-**key api endpoints**
-*   
-*   
-*   
-*   
-*    (New)
-*    (New)
+*   **/app/backend/ai_chat_routes.py**: Contains the broken RAG implementation. Needs to be fixed using .
+*   **/app/frontend/src/components/ui/select.tsx**: Contains the attempted fix for the  issue.
+*   **/app/frontend/src/pages/admin/AdminEmployees.tsx**: Contains the UI for employee management and needs the Approve button functionality.
+*   **/app/frontend/src/components/ui/dialog.tsx**: Contains the correct implementation for centered dialogs.
 
 **Critical Info for New Agent**
-*   **BLOCKER:** The application is currently in a broken state. You cannot access any dashboard pages due to a blank screen after login. Your first and only priority is to fix this rendering/routing/session issue.
-*   **User Standards:** The user has exceptionally high standards for UI/UX, demanding a world-class, billion-dollar quality application with immersive interactions. Do not compromise on design quality.
-*   **Environment Variables:** The frontend now uses Vite, so all environment variables must be prefixed with . The key variable is  in .
-*   **Backend Stability:** The backend is considered stable, although the Qdrant fix is unverified. Focus your debugging efforts on the frontend first.
+*   **RAG System Blocker:** Your immediate priority is to fix the AI chat's embedding generation. **Do not use the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
+              [-o ORGANIZATION] [-t {openai,azure}]
+              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
+              [--azure-ad-token AZURE_AD_TOKEN] [-V]
+              {api,tools,migrate,grit} ...
+
+positional arguments:
+  {api,tools,migrate,grit}
+    api                 Direct API calls
+    tools               Client side tools for convenience
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         Set verbosity.
+  -b API_BASE, --api-base API_BASE
+                        What API base url to use.
+  -k API_KEY, --api-key API_KEY
+                        What API key to use.
+  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
+                        What proxy to use.
+  -o ORGANIZATION, --organization ORGANIZATION
+                        Which organization to run as (will use your default
+                        organization if not specified)
+  -t {openai,azure}, --api-type {openai,azure}
+                        The backend API to call, must be `openai` or `azure`
+  --api-version API_VERSION
+                        The Azure API version, e.g.
+                        'https://learn.microsoft.com/en-us/azure/ai-
+                        services/openai/reference#rest-api-versioning'
+  --azure-endpoint AZURE_ENDPOINT
+                        The Azure endpoint, e.g.
+                        'https://endpoint.openai.azure.com'
+  --azure-ad-token AZURE_AD_TOKEN
+                        A token from Azure Active Directory,
+                        https://www.microsoft.com/en-
+                        us/security/business/identity-access/microsoft-entra-
+                        id
+  -V, --version         show program's version number and exit library directly.** You must use the  library to make embedding calls with the . Call  to get the correct playbook for this.
+*   **UI Bugs:** After fixing the RAG system, address the two critical UI bugs: the non-functional dropdowns inside dialogs (likely a  issue in ) and the missing Approve Employee button in .
+*   **User Standards:** The user has very high standards for UI/UX, expecting a world-class and premium feel. Pay close attention to visual details and interactions.
 
 **documents and test reports created in this job**
-*   /app/backend/chat.md
-*   /app/backend/README.md
-*   /app/frontend/README.md
-*   /app/README.md
-*   /app/memory/PRD.md
+*    (Updated)
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Requested to proceed with the proposed plan, confirmed the brand name is Lumina, and attached a favicon. (ADDRESSED)
-2.  **Agent:** Proposed a plan to fix the AI chat bug, redesign dashboards with a premium feel, add mobile responsiveness, implement document deletion, chat history, and create  documentation. (PENDING USER CONFIRMATION)
-3.  **User:** Reported the document upload in the chatbot fails with a Qdrant error. Requested document deletion, chat history, and premium pop-ups. Asked for profile page improvements and notification implementation. Requested a detailed  file. Provided a screenshot of a misaligned pop-up. (PENDING)
-4.  **Agent:** Finished the landing page replication and was about to provide a summary. (INTERRUPTED by user feedback)
-5.  **User:** Provided detailed feedback on the state of the dashboards, calling them basic and bad-looking. Requested an ultra-premium redesign based on the Able Pro template, with micro-animations, better responsiveness, and improved pop-ups. (ADDRESSED - but implementation is buggy)
-6.  **Agent:** Finished and provided a summary of the landing page work. (This was immediately followed by user feedback, making the summary outdated).
-7.  **User:** Instructed the agent to continue and ensure the design is world-class. (ADDRESSED)
-8.  **User:** Instructed agent to continue! and replicate the landing page from  exactly, providing GitHub links and asset files. Requested a premium footer, README updates, and world-class design and responsiveness. (ADDRESSED)
-9.  **Agent:** Sent a plan to the user for confirmation. (ADDRESSED)
+1.  **User:** Reports login is failing. (ADDRESSED - Agent confirmed it was working).
+2.  **User:** Thanks agent, but reports multiple new critical issues:
+    *   No UI to approve new employee registrations. (PENDING)
+    *   Dropdowns inside dialogs are not working (z-index issue suspected). (PENDING)
+    *   Requests Assign Department be moved out of the  menu. (PENDING)
+    *   Reports the RAG system is failing with  error on both upload and chat. (PENDING - HIGHEST PRIORITY)
+    *   Requests UI progress indicators for RAG operations. (PENDING)
+    *   Requests a UI button for document deletion. (PENDING)
+    *   Requests detailed technical documentation (, ) be created after all fixes. (PENDING)
 
 **Project Health Check:**
-*   **Broken:** The entire frontend dashboard functionality is inaccessible due to a blank screen post-login.
+*   **Broken:**
+    *   The AI Chat (RAG) system is non-functional.
+    *   Key UI interactions (dropdowns in dialogs, employee approval) are broken or missing.
 *   **Mocked:** None.
 
 **3rd Party Integrations**
 *   **MongoDB Atlas**
-*   **Groq**
-*   **Qdrant**
-*   **GSAP**
-*   **anime.js** (New)
+*   **Groq** (LLM Inference)
+*   **Qdrant** (Vector DB)
+*   **OpenAI Embeddings** (via  library, requires Emergent LLM Key)
+*   **anime.js**
 
 **Testing status**
-*   **Testing agent used after significant changes:** YES, but the response was truncated and did not cover the latest issues.
-*   **Troubleshoot agent used after agent stuck in loop:** NO.
-*   **Test files created:** None in this session.
-*   **Known regressions:** The entire dashboard section is non-functional, which is a major regression from the previous state where placeholder pages were visible.
+*   **Testing agent used after significant changes:** NO
+*   **Troubleshoot agent used after agent stuck in loop:** NO
+*   **Test files created:** None.
+*   **Known regressions:** AI Chat RAG system, dropdown functionality within dialogs.
 
 **Credentials to test flow:**
-*   Create new users (admin and employee roles) via the signup page. Example:
-    *   Email: 
-    *   Password: 
-
-**What agent forgot to execute**
-*   The agent did not verify the fix for the Qdrant bug.
-*   The agent did not verify the fix for the pop-up alignment.
-*   The agent created  but did not add the detailed technical content requested by the user.
-*   The agent did not fully test the session/auth flow after making significant changes, leading to the current blank screen blocker.</analysis>
+*   Create new users (admin and employee roles) via the signup page.
+    *   Admin:  / 
+    *   Employee:  /  (will require admin approval after fix)</analysis>

@@ -11,13 +11,13 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
 import {
   DropdownMenu,
@@ -29,7 +29,8 @@ import {
   MessageSquare, Send, Upload, FileText, Trash2, Bot, User, Sparkles,
   Loader2, Plus, History, Settings, ChevronDown, Copy, RefreshCw,
   FileUp, X, Check, AlertCircle, Zap, Brain, BookOpen, MoreHorizontal,
-  Download, Eye, Clock
+  Download, Eye, Clock, CheckCircle2, Database, FileSearch, Cpu,
+  HardDrive, Search, MessageCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { ChatMessage, KnowledgeDocument, ChatResponse } from '@/types';
@@ -41,6 +42,159 @@ const SUGGESTED_PROMPTS = [
   "Explain the onboarding process",
   "What benefits do we offer?",
 ];
+
+// Upload progress steps
+const UPLOAD_STEPS = [
+  { id: 'uploading', label: 'Uploading file', icon: Upload },
+  { id: 'extracting', label: 'Extracting text', icon: FileSearch },
+  { id: 'chunking', label: 'Creating chunks', icon: FileText },
+  { id: 'embedding', label: 'Generating embeddings', icon: Cpu },
+  { id: 'storing', label: 'Storing vectors', icon: Database },
+  { id: 'saving', label: 'Saving metadata', icon: HardDrive },
+  { id: 'complete', label: 'Complete', icon: CheckCircle2 },
+];
+
+// Chat processing steps
+const CHAT_STEPS = [
+  { id: 'analyzing', label: 'Analyzing message', icon: MessageCircle },
+  { id: 'embedding', label: 'Creating query embedding', icon: Cpu },
+  { id: 'searching', label: 'Searching knowledge base', icon: Search },
+  { id: 'retrieving', label: 'Retrieving relevant chunks', icon: FileSearch },
+  { id: 'thinking', label: 'AI reasoning', icon: Brain },
+  { id: 'generating', label: 'Generating response', icon: Sparkles },
+];
+
+// Progress Dialog Component
+function ProcessingDialog({ 
+  isOpen, 
+  title, 
+  steps, 
+  currentStep, 
+  onClose,
+  error
+}: { 
+  isOpen: boolean;
+  title: string;
+  steps: typeof UPLOAD_STEPS;
+  currentStep: number;
+  onClose?: () => void;
+  error?: string | null;
+}) {
+  const progress = Math.round(((currentStep + 1) / steps.length) * 100);
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={() => {}}>
+      <DialogContent className="sm:max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg">
+              <Cpu className="w-5 h-5 text-white animate-pulse" />
+            </div>
+            {title}
+          </DialogTitle>
+          <DialogDescription>
+            Processing your request...
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="py-4 space-y-4">
+          {/* Progress bar */}
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="font-medium text-primary">{progress}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
+          
+          {/* Steps */}
+          <div className="space-y-2 mt-4">
+            {steps.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = index === currentStep;
+              const isComplete = index < currentStep;
+              const isPending = index > currentStep;
+              
+              return (
+                <motion.div
+                  key={step.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`flex items-center gap-3 p-2.5 rounded-lg transition-all ${
+                    isActive ? 'bg-violet-500/10 border border-violet-500/30' :
+                    isComplete ? 'bg-green-500/10' :
+                    'bg-secondary/50'
+                  }`}
+                >
+                  <div className={`p-1.5 rounded-lg ${
+                    isActive ? 'bg-violet-500 text-white' :
+                    isComplete ? 'bg-green-500 text-white' :
+                    'bg-secondary text-muted-foreground'
+                  }`}>
+                    {isComplete ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : isActive ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Icon className="w-4 h-4" />
+                    )}
+                  </div>
+                  <span className={`text-sm ${
+                    isActive ? 'font-medium text-violet-600' :
+                    isComplete ? 'text-green-600' :
+                    'text-muted-foreground'
+                  }`}>
+                    {step.label}
+                  </span>
+                  {isActive && (
+                    <motion.div
+                      className="ml-auto flex gap-1"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                    >
+                      {[0, 1, 2].map((i) => (
+                        <motion.div
+                          key={i}
+                          className="w-1.5 h-1.5 rounded-full bg-violet-500"
+                          animate={{ scale: [1, 1.2, 1] }}
+                          transition={{ duration: 0.6, repeat: Infinity, delay: i * 0.15 }}
+                        />
+                      ))}
+                    </motion.div>
+                  )}
+                </motion.div>
+              );
+            })}
+          </div>
+          
+          {/* Error state */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
+            >
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                <span className="font-medium">Error</span>
+              </div>
+              <p className="mt-1 text-xs">{error}</p>
+            </motion.div>
+          )}
+        </div>
+        
+        {(currentStep >= steps.length - 1 || error) && onClose && (
+          <div className="flex justify-end">
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 export default function AdminAIChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -55,6 +209,11 @@ export default function AdminAIChat() {
   const [activeTab, setActiveTab] = useState('chat');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [documentToDelete, setDocumentToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  
+  // Processing state
+  const [uploadProgress, setUploadProgress] = useState({ isOpen: false, step: 0, error: null as string | null });
+  const [chatProgress, setChatProgress] = useState({ isOpen: false, step: 0 });
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -91,6 +250,14 @@ export default function AdminAIChat() {
     }
   };
 
+  const simulateChatProgress = async () => {
+    // Simulate progress through chat steps
+    for (let i = 0; i < CHAT_STEPS.length - 1; i++) {
+      setChatProgress(prev => ({ ...prev, step: i }));
+      await new Promise(resolve => setTimeout(resolve, 400 + Math.random() * 300));
+    }
+  };
+
   const handleSend = async (promptOverride?: string) => {
     const messageText = promptOverride || input;
     if (!messageText.trim() || isLoading) return;
@@ -105,9 +272,18 @@ export default function AdminAIChat() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setChatProgress({ isOpen: true, step: 0 });
 
     try {
+      // Start progress simulation
+      const progressPromise = simulateChatProgress();
+      
       const response = await chatAPI.sendMessage(messageText, sessionId || undefined);
+      
+      // Wait for progress animation to catch up
+      await progressPromise;
+      setChatProgress(prev => ({ ...prev, step: CHAT_STEPS.length - 1 }));
+      
       setSessionId(response.session_id);
       setLastResponse(response);
       
@@ -119,7 +295,14 @@ export default function AdminAIChat() {
         created_at: new Date().toISOString()
       };
       setMessages(prev => [...prev, assistantMessage]);
+      
+      // Close progress after brief delay
+      setTimeout(() => {
+        setChatProgress({ isOpen: false, step: 0 });
+      }, 500);
+      
     } catch (error: any) {
+      setChatProgress({ isOpen: false, step: 0 });
       toast({
         title: 'Error',
         description: error.response?.data?.detail || 'Failed to get response',
@@ -128,6 +311,14 @@ export default function AdminAIChat() {
     } finally {
       setIsLoading(false);
       inputRef.current?.focus();
+    }
+  };
+
+  const simulateUploadProgress = async () => {
+    const delays = [300, 500, 400, 800, 400, 300, 200];
+    for (let i = 0; i < UPLOAD_STEPS.length - 1; i++) {
+      setUploadProgress(prev => ({ ...prev, step: i }));
+      await new Promise(resolve => setTimeout(resolve, delays[i] || 300));
     }
   };
 
@@ -154,21 +345,38 @@ export default function AdminAIChat() {
     }
 
     setIsUploading(true);
+    setUploadProgress({ isOpen: true, step: 0, error: null });
+
     try {
+      // Start progress simulation
+      const progressPromise = simulateUploadProgress();
+      
       const result = await chatAPI.uploadDocument(file);
-      toast({
-        title: result.duplicate ? 'Document exists' : 'Upload successful',
-        description: result.duplicate 
-          ? 'This document has already been uploaded' 
-          : `${file.name} uploaded with ${result.chunks_created} chunks`,
-      });
+      
+      // Wait for progress animation
+      await progressPromise;
+      setUploadProgress(prev => ({ ...prev, step: UPLOAD_STEPS.length - 1 }));
+      
+      // Close dialog after brief delay
+      setTimeout(() => {
+        setUploadProgress({ isOpen: false, step: 0, error: null });
+        toast({
+          title: result.duplicate ? 'Document exists' : 'Upload successful!',
+          description: result.duplicate 
+            ? 'This document has already been uploaded' 
+            : `${file.name} uploaded with ${result.chunks_created} chunks`,
+        });
+      }, 800);
+      
       fetchDocuments();
     } catch (error: any) {
-      toast({
-        title: 'Upload failed',
-        description: error.response?.data?.detail || 'Failed to upload document',
-        variant: 'destructive'
-      });
+      const errorMsg = error.response?.data?.detail || 'Failed to upload document';
+      setUploadProgress(prev => ({ ...prev, error: errorMsg }));
+      
+      // Keep dialog open to show error
+      setTimeout(() => {
+        setUploadProgress({ isOpen: false, step: 0, error: null });
+      }, 3000);
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -176,15 +384,21 @@ export default function AdminAIChat() {
   };
 
   const handleDeleteDocument = async (id: string) => {
+    setIsDeleting(true);
     try {
       await chatAPI.deleteDocument(id);
-      toast({ title: 'Document deleted', description: 'Document and its chunks have been removed' });
+      toast({ 
+        title: 'Document deleted', 
+        description: 'Document and its vector embeddings have been removed from the knowledge base' 
+      });
       fetchDocuments();
     } catch (error) {
       toast({ title: 'Error', description: 'Failed to delete document', variant: 'destructive' });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setDocumentToDelete(null);
     }
-    setDeleteDialogOpen(false);
-    setDocumentToDelete(null);
   };
 
   const handleClearHistory = async () => {
@@ -243,7 +457,7 @@ export default function AdminAIChat() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={handleNewChat} className="gap-2">
+                  <Button variant="outline" size="sm" onClick={handleNewChat} className="gap-2" data-testid="new-chat-btn">
                     <Plus className="w-4 h-4" />
                     <span className="hidden sm:inline">New Chat</span>
                   </Button>
@@ -294,6 +508,7 @@ export default function AdminAIChat() {
                             transition={{ delay: i * 0.1 }}
                             onClick={() => handleSend(prompt)}
                             className="px-3 py-2 text-sm bg-secondary hover:bg-secondary/80 rounded-lg transition-colors text-left"
+                            data-testid={`suggested-prompt-${i}`}
                           >
                             {prompt}
                           </motion.button>
@@ -372,8 +587,8 @@ export default function AdminAIChat() {
                       </motion.div>
                     ))}
                     
-                    {/* Loading indicator */}
-                    {isLoading && (
+                    {/* Simple loading indicator when progress dialog is open */}
+                    {isLoading && !chatProgress.isOpen && (
                       <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -436,12 +651,14 @@ export default function AdminAIChat() {
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                     disabled={isLoading}
                     className="pr-12 h-12 bg-card border-border/50 focus:border-violet-500 focus:ring-violet-500/20"
+                    data-testid="chat-input"
                   />
                   <Button
                     size="icon"
                     onClick={() => handleSend()}
                     disabled={isLoading || !input.trim()}
                     className="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 w-9 bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 shadow-lg shadow-violet-500/25"
+                    data-testid="send-message-btn"
                   >
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -496,17 +713,19 @@ export default function AdminAIChat() {
                     onChange={handleUpload}
                     accept=".pdf,.doc,.docx"
                     className="hidden"
+                    data-testid="file-input"
                   />
                   <Button
                     variant="outline"
                     className="w-full mb-4 h-12 border-dashed border-2 hover:border-primary hover:bg-primary/5 gap-2"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploading}
+                    data-testid="upload-document-btn"
                   >
                     {isUploading ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin" />
-                        Uploading...
+                        Processing...
                       </>
                     ) : (
                       <>
@@ -539,6 +758,7 @@ export default function AdminAIChat() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="group relative p-3 bg-secondary/50 hover:bg-secondary rounded-xl transition-colors"
+                            data-testid={`document-item-${doc.id}`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`p-2 rounded-lg shrink-0 ${
@@ -575,6 +795,7 @@ export default function AdminAIChat() {
                                   setDeleteDialogOpen(true);
                                 }}
                                 className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all"
+                                data-testid={`delete-document-${doc.id}`}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </Button>
@@ -634,12 +855,16 @@ export default function AdminAIChat() {
                     <h4 className="text-sm font-medium text-foreground">Model Info</h4>
                     <div className="p-3 bg-secondary/50 rounded-xl space-y-2">
                       <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">Model</span>
+                        <span className="text-muted-foreground">LLM</span>
                         <span className="font-medium">LLaMA 3.1 8B</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Provider</span>
                         <span className="font-medium">Groq</span>
+                      </div>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">Embeddings</span>
+                        <span className="font-medium">MiniLM-L6-v2</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-muted-foreground">Vector Store</span>
@@ -666,6 +891,24 @@ export default function AdminAIChat() {
         </div>
       </div>
 
+      {/* Upload Processing Dialog */}
+      <ProcessingDialog
+        isOpen={uploadProgress.isOpen}
+        title="Processing Document"
+        steps={UPLOAD_STEPS}
+        currentStep={uploadProgress.step}
+        error={uploadProgress.error}
+        onClose={() => setUploadProgress({ isOpen: false, step: 0, error: null })}
+      />
+
+      {/* Chat Processing Dialog */}
+      <ProcessingDialog
+        isOpen={chatProgress.isOpen}
+        title="Processing Query"
+        steps={CHAT_STEPS}
+        currentStep={chatProgress.step}
+      />
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -675,19 +918,28 @@ export default function AdminAIChat() {
               Delete Document
             </DialogTitle>
             <DialogDescription>
-              This will permanently delete this document and all its indexed chunks from the knowledge base.
+              This will permanently delete this document and all its indexed vector embeddings from the knowledge base.
               This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={() => documentToDelete && handleDeleteDocument(documentToDelete)}
+              disabled={isDeleting}
+              data-testid="confirm-delete-btn"
             >
-              Delete Document
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Document'
+              )}
             </Button>
           </div>
         </DialogContent>

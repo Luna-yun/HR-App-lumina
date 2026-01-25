@@ -11,7 +11,7 @@ import uuid
 from typing import Dict, Optional
 
 # Configuration
-BASE_URL = "https://brighthr.preview.emergentagent.com/api"
+BASE_URL = "https://lumina-staff.preview.emergentagent.com/api"
 TIMEOUT = 30
 
 class EMSAuthTester:

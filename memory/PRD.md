@@ -10,6 +10,19 @@ Build a comprehensive HR management application by merging functionalities and d
 
 ### ✅ Completed Features
 
+#### RAG System Overhaul & UI Enhancements (Jan 25, 2026)
+- [x] **Fixed Embedding System** - Replaced failing OpenAI API calls with local `sentence-transformers/all-MiniLM-L6-v2` model
+- [x] **Embedding Dimension** - Standardized to 384 dimensions (local model)
+- [x] **Groq LLM Integration** - LLaMA 3.1 8B for response generation (unchanged)
+- [x] **Processing Progress Dialogs** - Added detailed step-by-step progress indicators for:
+  - Document upload: Uploading → Extracting → Chunking → Embedding → Storing → Complete
+  - Chat queries: Analyzing → Embedding → Searching → Retrieving → Reasoning → Generating
+- [x] **Document Deletion UI** - Delete button on each document with confirmation dialog
+- [x] **Timor-Leste Added** - Added to ASEAN countries dropdown in signup form
+- [x] **Technical Documentation** - Created:
+  - `/app/backend/researchReport.md` - IEEE-style research paper on RAG system
+  - `/app/backend/architecture.md` - Comprehensive system architecture documentation
+
 #### Performance & Task Management System (Jan 24, 2026)
 - [x] **Backend**: Created `performance_routes.py` with full CRUD for tasks and performance reviews
 - [x] **Task Assignment**: Admins can assign tasks to employees with priority, due date, category
@@ -24,13 +37,13 @@ Build a comprehensive HR management application by merging functionalities and d
 - [x] **Department Assignment**: Assign employees to departments from the employee list
 - [x] **Bulk Import**: Import multiple employees via CSV format (name, email, department, job_title)
 
-#### AI Chat RAG System Fix (Jan 20, 2026)
-- [x] **Fixed Embedding System** - Replaced hash-based pseudo-embeddings with proper semantic embeddings using `sentence-transformers/all-MiniLM-L6-v2`
+#### AI Chat RAG System Fix (Jan 20, 2026 - Updated Jan 25, 2026)
+- [x] **Fixed Embedding System** - Uses local `sentence-transformers/all-MiniLM-L6-v2` model (384 dimensions)
 - [x] **Fixed Qdrant API** - Updated from deprecated `.search()` to `.query_points()` method
-- [x] **Embedding Dimension** - Changed from 1024 (hash-based) to 384 (semantic embeddings)
 - [x] **RAG Now Working** - Documents are properly indexed and retrieved based on semantic similarity
 - [x] **Document Upload/Delete** - Both working correctly with proper vector storage management
 - [x] **Chat History** - Session-based chat history preserved across messages
+- [x] **Note**: Documents uploaded with old embeddings (1536 dim) need to be re-uploaded to work with new model (384 dim)
 
 #### Premium Dialog System & WYSIWYG Editor (Jan 20, 2026)
 - [x] **Fixed Dialog Alignment** - All pop-up dialogs now properly centered using flexbox approach (`flex items-center justify-center`)

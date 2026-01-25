@@ -238,7 +238,7 @@ export interface RecruitmentStats {
   hired: number;
 }
 
-// ASEAN Countries
+// ASEAN Countries (includes Timor-Leste as observer)
 export const ASEAN_COUNTRIES = [
   'Brunei',
   'Cambodia',
@@ -249,6 +249,7 @@ export const ASEAN_COUNTRIES = [
   'Philippines',
   'Singapore',
   'Thailand',
+  'Timor-Leste',
   'Vietnam'
 ] as const;
 

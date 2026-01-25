@@ -12,7 +12,7 @@ from groq import Groq
 import PyPDF2
 import docx
 import io
-import httpx
+from sentence_transformers import SentenceTransformer
 
 from models import (
     KnowledgeDocument, ChatMessage, ChatRequest, ChatResponse
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Initialize Groq client
+# Initialize Groq client for LLM inference
 groq_client = Groq(api_key=os.environ.get('GROQ_API_KEY'))
 
 # Initialize Qdrant client
@@ -32,10 +32,22 @@ qdrant_client = QdrantClient(
     api_key=os.environ.get('QDRANT_API_KEY'),
 )
 
-# OpenAI Embeddings configuration (using Emergent's universal key or user's key)
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY') or os.environ.get('EMERGENT_LLM_KEY')
-EMBEDDING_MODEL = "text-embedding-3-small"  # OpenAI's small embedding model
-EMBEDDING_DIM = 1536  # Dimension for text-embedding-3-small
+# Initialize local embedding model (sentence-transformers)
+# Using all-MiniLM-L6-v2 - lightweight and fast, 384 dimensions
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_DIM = 384
+
+# Lazy load embedding model to avoid startup delay
+_embedding_model = None
+
+def get_embedding_model():
+    """Lazy load the embedding model"""
+    global _embedding_model
+    if _embedding_model is None:
+        logger.info(f"Loading embedding model: {EMBEDDING_MODEL_NAME}")
+        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        logger.info(f"Embedding model loaded successfully. Dimension: {EMBEDDING_DIM}")
+    return _embedding_model
 
 COLLECTION_NAME_PREFIX = "hr_knowledge_"
 
@@ -57,7 +69,7 @@ def ensure_collection(company_id: str):
         collection_info = qdrant_client.get_collection(collection_name)
         # Check if existing collection has different dimension - recreate if needed
         if collection_info.config.params.vectors.size != EMBEDDING_DIM:
-            logger.warning(f"Collection {collection_name} has wrong dimension, recreating...")
+            logger.warning(f"Collection {collection_name} has wrong dimension ({collection_info.config.params.vectors.size} vs {EMBEDDING_DIM}), recreating...")
             qdrant_client.delete_collection(collection_name)
             raise Exception("Need to recreate collection")
     except Exception:
@@ -135,50 +147,44 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
 
 
 def get_embedding(text: str) -> List[float]:
-    """Get embedding using OpenAI API (lightweight, no local ML models)"""
+    """Get embedding using local sentence-transformers model"""
     try:
-        if not OPENAI_API_KEY:
-            logger.error("No OpenAI API key configured for embeddings")
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Embedding service not configured"
-            )
+        model = get_embedding_model()
         
         # Clean and normalize text
         text = text.strip()[:8000]  # Limit text length
         
-        # Call OpenAI embeddings API
-        with httpx.Client(timeout=30.0) as client:
-            response = client.post(
-                "https://api.openai.com/v1/embeddings",
-                headers={
-                    "Authorization": f"Bearer {OPENAI_API_KEY}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": EMBEDDING_MODEL,
-                    "input": text
-                }
-            )
-            
-            if response.status_code != 200:
-                logger.error(f"OpenAI API error: {response.status_code} - {response.text}")
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to generate embedding"
-                )
-            
-            data = response.json()
-            embedding = data["data"][0]["embedding"]
-            return embedding
+        # Generate embedding
+        embedding = model.encode(text, normalize_embeddings=True)
         
-    except HTTPException:
-        raise
+        return embedding.tolist()
+        
     except Exception as e:
         logger.error(f"Embedding error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to generate embedding"
+            detail=f"Failed to generate embedding: {str(e)}"
+        )
+
+
+def get_embeddings_batch(texts: List[str]) -> List[List[float]]:
+    """Get embeddings for multiple texts efficiently"""
+    try:
+        model = get_embedding_model()
+        
+        # Clean texts
+        cleaned_texts = [t.strip()[:8000] for t in texts]
+        
+        # Generate embeddings in batch (much faster)
+        embeddings = model.encode(cleaned_texts, normalize_embeddings=True, show_progress_bar=False)
+        
+        return embeddings.tolist()
+        
+    except Exception as e:
+        logger.error(f"Batch embedding error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate embeddings: {str(e)}"
         )
 
 
@@ -218,7 +224,8 @@ async def upload_knowledge_document(
             return {
                 "message": "This document has already been uploaded",
                 "document_id": existing_doc["id"],
-                "duplicate": True
+                "duplicate": True,
+                "steps_completed": ["duplicate_check"]
             }
         
         # Extract text based on file type
@@ -262,12 +269,13 @@ async def upload_knowledge_document(
             uploaded_by=admin_id
         )
         
-        await db.knowledge_documents.insert_one(doc.dict())
+        # Generate embeddings for all chunks (batch processing)
+        logger.info(f"Generating embeddings for {len(chunks)} chunks...")
+        embeddings = get_embeddings_batch(chunks)
         
-        # Store chunks in Qdrant with OpenAI embeddings
+        # Store chunks in Qdrant
         points = []
-        for i, chunk in enumerate(chunks):
-            embedding = get_embedding(chunk)
+        for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
             point_id = str(uuid.uuid4())
             
             points.append(qmodels.PointStruct(
@@ -289,14 +297,25 @@ async def upload_knowledge_document(
             wait=True
         )
         
-        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using OpenAI embeddings")
+        # Save document record to MongoDB AFTER successful vector storage
+        await db.knowledge_documents.insert_one(doc.dict())
+        
+        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using local embeddings")
         
         return {
             "message": "Document uploaded and processed successfully",
             "document_id": doc.id,
             "filename": file.filename,
             "chunks_created": len(chunks),
-            "duplicate": False
+            "duplicate": False,
+            "steps_completed": [
+                "file_received",
+                "text_extracted", 
+                "chunks_created",
+                "embeddings_generated",
+                "vectors_stored",
+                "metadata_saved"
+            ]
         }
     
     except HTTPException:
@@ -391,7 +410,10 @@ async def delete_knowledge_document(
         # Delete from MongoDB
         await db.knowledge_documents.delete_one({"id": document_id})
         
-        return {"message": "Document deleted successfully"}
+        return {
+            "message": "Document deleted successfully",
+            "steps_completed": ["vectors_deleted", "metadata_deleted"]
+        }
     
     except HTTPException:
         raise
@@ -415,7 +437,7 @@ async def chat(
         user_id = current_user["sub"]
         session_id = request.session_id or str(uuid.uuid4())
         
-        # Get embedding for query using OpenAI
+        # Get embedding for query using local model
         query_embedding = get_embedding(request.message)
         
         # Ensure collection exists
