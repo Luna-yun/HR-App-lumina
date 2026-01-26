@@ -147,6 +147,7 @@ from recruitment_routes import router as recruitment_router
 from ai_chat_routes import router as ai_chat_router
 from notification_routes import router as notification_router
 from performance_routes import router as performance_router
+from contact_routes import router as contact_router
 
 app.include_router(auth_router, prefix="/api", tags=["Authentication"])
 app.include_router(attendance_router, prefix="/api", tags=["Attendance"])
@@ -158,6 +159,7 @@ app.include_router(recruitment_router, prefix="/api", tags=["Recruitment"])
 app.include_router(ai_chat_router, prefix="/api", tags=["AI Chat"])
 app.include_router(notification_router, prefix="/api", tags=["Notifications"])
 app.include_router(performance_router, prefix="/api", tags=["Performance"])
+app.include_router(contact_router, prefix="/api", tags=["Contact"])
 
 # Health check endpoint
 @app.get("/api/health")

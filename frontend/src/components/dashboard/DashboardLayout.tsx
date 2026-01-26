@@ -37,7 +37,7 @@ const adminNavItems = [
   { icon: Building2, label: 'Departments', href: '/admin/departments', description: 'Organizational structure' },
   { icon: Calendar, label: 'Leave Requests', href: '/admin/leaves', description: 'Approve & track leaves' },
   { icon: Clock, label: 'Attendance', href: '/admin/attendance', description: 'Time & presence' },
-  { icon: DollarSign, label: 'Payroll', href: '/admin/payroll', description: 'Compensation management' },
+  // { icon: DollarSign, label: 'Payroll', href: '/admin/payroll', description: 'Compensation management' },
   { icon: Bell, label: 'Notices', href: '/admin/notices', description: 'Announcements' },
   { icon: Briefcase, label: 'Recruitment', href: '/admin/recruitment', description: 'Hire new talent' },
   { icon: BarChart3, label: 'Analytics', href: '/admin/analytics', description: 'Insights & reports' },

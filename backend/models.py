@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 import uuid
 
-# ASEAN Countries
+# ASEAN Countries (includes Timor-Leste as observer)
 ASEAN_COUNTRIES = [
     "Brunei",
     "Cambodia",
@@ -14,6 +14,7 @@ ASEAN_COUNTRIES = [
     "Philippines",
     "Singapore",
     "Thailand",
+    "Timor-Leste",
     "Vietnam"
 ]
 

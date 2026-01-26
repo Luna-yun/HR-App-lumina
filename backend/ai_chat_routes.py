@@ -12,7 +12,7 @@ from groq import Groq
 import PyPDF2
 import docx
 import io
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 from models import (
     KnowledgeDocument, ChatMessage, ChatRequest, ChatResponse
@@ -32,20 +32,20 @@ qdrant_client = QdrantClient(
     api_key=os.environ.get('QDRANT_API_KEY'),
 )
 
-# Initialize local embedding model (sentence-transformers)
+# Initialize local embedding model using FastEmbed (CPU-only, no PyTorch/CUDA required)
 # Using all-MiniLM-L6-v2 - lightweight and fast, 384 dimensions
-EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384
 
 # Lazy load embedding model to avoid startup delay
 _embedding_model = None
 
 def get_embedding_model():
-    """Lazy load the embedding model"""
+    """Lazy load the embedding model using FastEmbed (CPU-only)"""
     global _embedding_model
     if _embedding_model is None:
         logger.info(f"Loading embedding model: {EMBEDDING_MODEL_NAME}")
-        _embedding_model = SentenceTransformer(EMBEDDING_MODEL_NAME)
+        _embedding_model = TextEmbedding(model_name=EMBEDDING_MODEL_NAME)
         logger.info(f"Embedding model loaded successfully. Dimension: {EMBEDDING_DIM}")
     return _embedding_model
 
@@ -147,17 +147,17 @@ def chunk_text(text: str, chunk_size: int = 500, overlap: int = 50) -> List[str]
 
 
 def get_embedding(text: str) -> List[float]:
-    """Get embedding using local sentence-transformers model"""
+    """Get embedding using FastEmbed (CPU-only, no CUDA required)"""
     try:
         model = get_embedding_model()
         
         # Clean and normalize text
         text = text.strip()[:8000]  # Limit text length
         
-        # Generate embedding
-        embedding = model.encode(text, normalize_embeddings=True)
+        # Generate embedding using FastEmbed
+        embeddings = list(model.embed([text]))
         
-        return embedding.tolist()
+        return embeddings[0].tolist()
         
     except Exception as e:
         logger.error(f"Embedding error: {str(e)}")
@@ -168,17 +168,17 @@ def get_embedding(text: str) -> List[float]:
 
 
 def get_embeddings_batch(texts: List[str]) -> List[List[float]]:
-    """Get embeddings for multiple texts efficiently"""
+    """Get embeddings for multiple texts efficiently using FastEmbed"""
     try:
         model = get_embedding_model()
         
         # Clean texts
         cleaned_texts = [t.strip()[:8000] for t in texts]
         
-        # Generate embeddings in batch (much faster)
-        embeddings = model.encode(cleaned_texts, normalize_embeddings=True, show_progress_bar=False)
+        # Generate embeddings in batch using FastEmbed
+        embeddings = list(model.embed(cleaned_texts))
         
-        return embeddings.tolist()
+        return [emb.tolist() for emb in embeddings]
         
     except Exception as e:
         logger.error(f"Batch embedding error: {str(e)}")
@@ -300,7 +300,7 @@ async def upload_knowledge_document(
         # Save document record to MongoDB AFTER successful vector storage
         await db.knowledge_documents.insert_one(doc.dict())
         
-        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using local embeddings")
+        logger.info(f"Uploaded document {file.filename} with {len(chunks)} chunks using FastEmbed")
         
         return {
             "message": "Document uploaded and processed successfully",
@@ -437,7 +437,7 @@ async def chat(
         user_id = current_user["sub"]
         session_id = request.session_id or str(uuid.uuid4())
         
-        # Get embedding for query using local model
+        # Get embedding for query using FastEmbed
         query_embedding = get_embedding(request.message)
         
         # Ensure collection exists

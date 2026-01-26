@@ -15,6 +15,9 @@ import {
   Sparkles,
   Check
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+const API_URL = import.meta.env.VITE_BACKEND_URL || import.meta.env.REACT_APP_BACKEND_URL || '';
 
 const contactMethods = [
   {
@@ -54,16 +57,65 @@ export function Contact() {
   const isInView = useInView(sectionRef, { once: true, margin: "-100px" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const { toast } = useToast();
+  
+  // Form state
+  const [formData, setFormData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    company: '',
+    message: ''
+  });
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setIsSubmitted(true);
+    try {
+      const response = await fetch(`${API_URL}/api/contact`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to send message');
+      }
+      
+      setIsSubmitted(true);
+      toast({
+        title: "Message Sent!",
+        description: "We'll get back to you within 24 hours.",
+      });
+      
+      // Reset form
+      setFormData({
+        first_name: '',
+        last_name: '',
+        email: '',
+        company: '',
+        message: ''
+      });
+      
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send message. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -247,8 +299,11 @@ export function Contact() {
                           First Name
                         </label>
                         <Input
+                          name="first_name"
                           placeholder="John"
                           required
+                          value={formData.first_name}
+                          onChange={handleInputChange}
                           className="h-12 bg-background/50"
                         />
                       </div>
@@ -257,8 +312,11 @@ export function Contact() {
                           Last Name
                         </label>
                         <Input
+                          name="last_name"
                           placeholder="Doe"
                           required
+                          value={formData.last_name}
+                          onChange={handleInputChange}
                           className="h-12 bg-background/50"
                         />
                       </div>
@@ -269,9 +327,12 @@ export function Contact() {
                         Work Email
                       </label>
                       <Input
+                        name="email"
                         type="email"
                         placeholder="john@company.com"
                         required
+                        value={formData.email}
+                        onChange={handleInputChange}
                         className="h-12 bg-background/50"
                       />
                     </div>
@@ -281,8 +342,11 @@ export function Contact() {
                         Company
                       </label>
                       <Input
+                        name="company"
                         placeholder="Your company name"
                         required
+                        value={formData.company}
+                        onChange={handleInputChange}
                         className="h-12 bg-background/50"
                       />
                     </div>
@@ -292,8 +356,11 @@ export function Contact() {
                         How can we help?
                       </label>
                       <Textarea
+                        name="message"
                         placeholder="Tell us about your needs..."
                         required
+                        value={formData.message}
+                        onChange={handleInputChange}
                         className="min-h-[120px] bg-background/50 resize-none"
                       />
                     </div>
