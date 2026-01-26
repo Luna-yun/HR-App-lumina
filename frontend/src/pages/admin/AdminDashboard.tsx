@@ -24,16 +24,25 @@ const AnimatedNumber = ({ value, suffix = '' }: { value: number | string, suffix
   const numericValue = typeof value === 'string' ? parseFloat(value) || 0 : value;
 
   useEffect(() => {
-    const obj = { val: 0 };
-    animate(obj, {
-      val: numericValue,
-      duration: 1500,
-      easing: 'easeOutExpo',
-      round: 1,
-      update: () => {
-        setDisplayValue(Math.round(obj.val));
+    // Simple counter animation
+    const duration = 1500;
+    const steps = 30;
+    const increment = numericValue / steps;
+    let current = 0;
+    let step = 0;
+    
+    const timer = setInterval(() => {
+      step++;
+      current = Math.min(Math.round(increment * step), numericValue);
+      setDisplayValue(current);
+      
+      if (step >= steps) {
+        clearInterval(timer);
+        setDisplayValue(numericValue);
       }
-    });
+    }, duration / steps);
+    
+    return () => clearInterval(timer);
   }, [numericValue]);
 
   return <>{displayValue}{suffix}</>;
@@ -205,24 +214,24 @@ export default function AdminDashboard() {
   const statCards = [
     {
       title: 'Total Employees',
-      value: stats?.total_employees || 0,
+      value: stats !== null ? stats.total_employees : null,
       icon: Users,
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-500/10',
       iconColor: 'text-blue-500',
-      trend: '+12%',
+      trend: stats !== null && stats.total_employees > 0 ? '+12%' : null,
       trendUp: true,
       sparkData: [30, 40, 35, 50, 49, 60, 70, 91, 80],
       sparkColor: '#3b82f6'
     },
     {
       title: 'New Hires',
-      value: stats?.new_hires_this_month || 0,
+      value: stats !== null ? stats.new_hires_this_month : null,
       icon: UserPlus,
       color: 'from-emerald-500 to-emerald-600',
       bgColor: 'bg-emerald-500/10',
       iconColor: 'text-emerald-500',
-      trend: '+8%',
+      trend: stats !== null && stats.new_hires_this_month > 0 ? '+8%' : null,
       trendUp: true,
       subtitle: 'This month',
       sparkData: [20, 25, 30, 28, 35, 40, 45, 50, 48],
@@ -230,7 +239,7 @@ export default function AdminDashboard() {
     },
     {
       title: 'Pending Leaves',
-      value: stats?.pending_leaves || pendingLeaves.length,
+      value: stats !== null ? (stats.pending_leaves ?? pendingLeaves.length) : null,
       icon: Calendar,
       color: 'from-amber-500 to-orange-500',
       bgColor: 'bg-amber-500/10',
@@ -241,13 +250,13 @@ export default function AdminDashboard() {
     },
     {
       title: 'Attendance Rate',
-      value: stats?.attendance_rate || 95,
+      value: stats !== null ? stats.attendance_rate : null,
       suffix: '%',
       icon: Clock,
       color: 'from-violet-500 to-purple-600',
       bgColor: 'bg-violet-500/10',
       iconColor: 'text-violet-500',
-      trend: '+2%',
+      trend: stats !== null && stats.attendance_rate > 0 ? '+2%' : null,
       trendUp: true,
       subtitle: 'Today',
       sparkData: [85, 88, 92, 90, 94, 93, 95, 94, 95],
@@ -260,8 +269,8 @@ export default function AdminDashboard() {
     { icon: Building2, label: 'Departments', href: '/admin/departments', color: 'from-green-500 to-emerald-600', desc: 'Structure' },
     { icon: Calendar, label: 'Leaves', href: '/admin/leaves', color: 'from-amber-500 to-orange-500', desc: 'Approvals' },
     { icon: Clock, label: 'Attendance', href: '/admin/attendance', color: 'from-violet-500 to-purple-600', desc: 'Time tracking' },
-    { icon: DollarSign, label: 'Payroll', href: '/admin/payroll', color: 'from-emerald-500 to-teal-600', desc: 'Salaries' },
-    { icon: MessageSquare, label: 'AI Chat', href: '/admin/ai-chat', color: 'from-pink-500 to-rose-600', desc: 'Ask anything' },
+    { icon: Bell, label: 'Notices', href: '/admin/notices', color: 'from-rose-500 to-pink-600', desc: 'Announcements' },
+    { icon: MessageSquare, label: 'AI Chat', href: '/admin/ai-chat', color: 'from-indigo-500 to-blue-600', desc: 'Ask anything' },
   ];
 
   return (
@@ -363,7 +372,11 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground font-medium">{stat.title}</p>
                     <p className="text-3xl lg:text-4xl font-bold text-foreground mt-1">
-                      <AnimatedNumber value={stat.value} suffix={stat.suffix || ''} />
+                      {stat.value !== null ? (
+                        <AnimatedNumber value={stat.value} suffix={stat.suffix || ''} />
+                      ) : (
+                        <span className="text-muted-foreground text-2xl">--</span>
+                      )}
                     </p>
                     {stat.subtitle && (
                       <p className="text-xs text-muted-foreground mt-1">{stat.subtitle}</p>

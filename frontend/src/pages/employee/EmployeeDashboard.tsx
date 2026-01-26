@@ -4,23 +4,22 @@ import { motion } from 'framer-motion';
 import gsap from 'gsap';
 import { format } from 'date-fns';
 import { useAuth } from '@/contexts/AuthContext';
-import { attendanceAPI, leaveAPI, salaryAPI, noticeAPI } from '@/services/api';
+import { attendanceAPI, leaveAPI, noticeAPI } from '@/services/api';
 import DashboardLayout from '@/components/dashboard/DashboardLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import {
-  Clock, Calendar, DollarSign, Bell, LogIn, LogOut,
-  CheckCircle, XCircle, AlertCircle, ArrowRight, Sun, Moon, CloudSun
+  Clock, Calendar, Bell, LogIn, LogOut,
+  CheckCircle, XCircle, AlertCircle, ArrowRight, Sun, Moon, CloudSun, FileText
 } from 'lucide-react';
-import type { AttendanceStatus, LeaveSummary, MySalary, Notice } from '@/types';
+import type { AttendanceStatus, LeaveSummary, Notice } from '@/types';
 
 export default function EmployeeDashboard() {
   const { user } = useAuth();
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus | null>(null);
   const [leaveSummary, setLeaveSummary] = useState<LeaveSummary | null>(null);
-  const [salary, setSalary] = useState<{ has_salary: boolean; salary: MySalary | null }>({ has_salary: false, salary: null });
   const [notices, setNotices] = useState<Notice[]>([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
@@ -38,15 +37,13 @@ export default function EmployeeDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statusData, leaveData, salaryData, noticesData] = await Promise.all([
+        const [statusData, leaveData, noticesData] = await Promise.all([
           attendanceAPI.getMyStatus(),
           leaveAPI.getMySummary(),
-          salaryAPI.getMySalary(),
           noticeAPI.getNotices(5),
         ]);
         setAttendanceStatus(statusData);
         setLeaveSummary(leaveData);
-        setSalary(salaryData);
         setNotices(noticesData);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
@@ -335,15 +332,15 @@ export default function EmployeeDashboard() {
             </CardContent>
           </Card>
 
-          {/* Salary Overview */}
+          {/* Quick Notices Preview */}
           <Card className="dashboard-card">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-500" />
-                  Salary
+                  <Bell className="w-5 h-5 text-rose-500" />
+                  Latest Notices
                 </CardTitle>
-                <Link to="/employee/salary">
+                <Link to="/employee/notices">
                   <Button variant="ghost" size="sm">
                     <ArrowRight className="w-4 h-4" />
                   </Button>
@@ -351,39 +348,39 @@ export default function EmployeeDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              {!salary.has_salary ? (
+              {notices.length === 0 ? (
                 <div className="text-center py-8">
-                  <DollarSign className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                  <p className="text-muted-foreground">No salary record yet</p>
+                  <Bell className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-muted-foreground">No notices yet</p>
                   <p className="text-sm text-muted-foreground/70 mt-1">
-                    Your salary will appear here once published
+                    Company announcements will appear here
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-emerald-500/10 rounded-xl">
-                    <p className="text-sm text-muted-foreground mb-1">Net Salary</p>
-                    <p className="text-3xl font-bold text-emerald-500">
-                      {salary.salary?.currency} {salary.salary?.net_salary?.toLocaleString()}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {salary.salary?.month}/{salary.salary?.year}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-secondary/50 rounded-lg">
-                      <p className="text-xs text-muted-foreground">Gross</p>
-                      <p className="font-semibold text-foreground">
-                        {salary.salary?.gross_salary?.toLocaleString()}
-                      </p>
+                <div className="space-y-3">
+                  {notices.slice(0, 3).map((notice, index) => (
+                    <div
+                      key={notice.id}
+                      className="p-3 bg-secondary/50 rounded-xl hover:bg-secondary transition-colors"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 rounded-lg bg-rose-500/10 shrink-0">
+                          <FileText className="w-4 h-4 text-rose-500" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground text-sm truncate">{notice.title}</h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {format(new Date(notice.created_at), 'MMM d, yyyy')}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="p-3 bg-secondary/50 rounded-lg">
-                      <p className="text-xs text-muted-foreground">Deductions</p>
-                      <p className="font-semibold text-red-500">
-                        -{salary.salary?.deductions?.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
+                  ))}
+                  <Link to="/employee/notices">
+                    <Button variant="outline" className="w-full mt-2" size="sm">
+                      View All Notices
+                    </Button>
+                  </Link>
                 </div>
               )}
             </CardContent>
@@ -413,27 +410,31 @@ export default function EmployeeDashboard() {
               </div>
             ) : (
               <div className="space-y-3">
-                {notices.map((notice, index) => (
-                  <motion.div
-                    key={notice.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-4 bg-secondary/50 rounded-xl"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-foreground truncate">{notice.title}</h4>
-                        <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                          {notice.content}
-                        </p>
+                {notices.map((notice, index) => {
+                  // Strip HTML for preview
+                  const plainContent = notice.content.replace(/<[^>]*>/g, '').substring(0, 150);
+                  return (
+                    <motion.div
+                      key={notice.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className="p-4 bg-secondary/50 rounded-xl"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-semibold text-foreground truncate">{notice.title}</h4>
+                          <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
+                            {plainContent}{plainContent.length >= 150 ? '...' : ''}
+                          </p>
+                        </div>
+                        <Badge variant="outline" className="shrink-0">
+                          {format(new Date(notice.created_at), 'MMM d')}
+                        </Badge>
                       </div>
-                      <Badge variant="outline" className="shrink-0">
-                        {format(new Date(notice.created_at), 'MMM d')}
-                      </Badge>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </div>
             )}
           </CardContent>

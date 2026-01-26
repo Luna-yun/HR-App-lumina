@@ -7,6 +7,13 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import type { Notice } from '@/types';
 
+// Utility to strip HTML tags for preview
+const stripHtml = (html: string) => {
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
+
 export default function EmployeeNotices() {
   const [notices, setNotices] = useState<Notice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,7 +56,16 @@ export default function EmployeeNotices() {
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-foreground">{notice.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">By {notice.publisher_name} • {format(new Date(notice.created_at), 'MMMM d, yyyy')}</p>
-                      <p className="mt-4 text-foreground/80 whitespace-pre-wrap">{notice.content}</p>
+                      {/* Render HTML content safely */}
+                      <div 
+                        className="mt-4 text-foreground/80 prose prose-sm max-w-none dark:prose-invert
+                          prose-headings:text-foreground prose-headings:font-semibold
+                          prose-p:text-foreground/80 prose-p:leading-relaxed
+                          prose-strong:text-foreground prose-strong:font-semibold
+                          prose-ul:text-foreground/80 prose-ol:text-foreground/80
+                          prose-li:marker:text-primary"
+                        dangerouslySetInnerHTML={{ __html: notice.content }}
+                      />
                     </div>
                   </div>
                 </CardContent>

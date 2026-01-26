@@ -49,7 +49,7 @@ const employeeNavItems = [
   { icon: User, label: 'Profile', href: '/employee/profile', description: 'Personal information' },
   { icon: Calendar, label: 'Leave', href: '/employee/leave', description: 'Request time off' },
   { icon: Clock, label: 'Attendance', href: '/employee/attendance', description: 'Your time records' },
-  { icon: DollarSign, label: 'Salary', href: '/employee/salary', description: 'View payslips' },
+  // { icon: DollarSign, label: 'Salary', href: '/employee/salary', description: 'View payslips' },
   { icon: Bell, label: 'Notices', href: '/employee/notices', description: 'Company updates' },
 ];
 
