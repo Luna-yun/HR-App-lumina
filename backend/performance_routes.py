@@ -33,6 +33,7 @@ class TaskUpdate(BaseModel):
     status: Optional[str] = None  # pending, in_progress, completed, cancelled
     priority: Optional[str] = None
     due_date: Optional[str] = None
+    notes: Optional[str] = None  # Optional note when updating status
 
 
 class TaskResponse(BaseModel):
@@ -263,6 +264,7 @@ async def update_task(
         db = get_db()
         user_id = current_user.get("sub")
         role = current_user.get("role")
+        user_name = current_user.get("full_name", current_user.get("email", "User"))
         
         task = await db.tasks.find_one({"id": task_id})
         if not task:
@@ -289,9 +291,32 @@ async def update_task(
         if update.due_date and role == "Admin":
             update_fields["due_date"] = update.due_date
         if update.status:
+            old_status = task.get("status", "pending")
             update_fields["status"] = update.status
             if update.status == "completed":
                 update_fields["completed_at"] = datetime.utcnow().isoformat()
+            
+            # Add status history entry
+            status_history_entry = {
+                "from_status": old_status,
+                "to_status": update.status,
+                "changed_by": user_id,
+                "changed_by_name": user_name,
+                "changed_at": datetime.utcnow().isoformat(),
+                "notes": update.notes or ""
+            }
+            
+            # Append to status_history array
+            await db.tasks.update_one(
+                {"id": task_id},
+                {"$push": {"status_history": status_history_entry}}
+            )
+        
+        # Store latest note
+        if update.notes:
+            update_fields["last_note"] = update.notes
+            update_fields["last_note_by"] = user_name
+            update_fields["last_note_at"] = datetime.utcnow().isoformat()
         
         await db.tasks.update_one(
             {"id": task_id},

@@ -128,6 +128,13 @@ async def login(request: LoginRequest, db: AsyncIOMotorDatabase = Depends(get_db
                 detail="Invalid email or password"
             )
         
+        # Check if user is terminated
+        if not user.get("is_active", True):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Your account has been deactivated. Please contact HR for assistance."
+            )
+        
         # Check if employee is approved (only for employees)
         if user["role"] == UserRole.EMPLOYEE and not user["is_approved"]:
             raise HTTPException(
@@ -157,6 +164,7 @@ async def login(request: LoginRequest, db: AsyncIOMotorDatabase = Depends(get_db
             role=user["role"],
             company_id=user["company_id"],
             company_name=user["company_name"],
+            country=user.get("country", "Singapore"),
             full_name=user.get("full_name", ""),
             department=user.get("department", "Unassigned"),
             job_title=user.get("job_title", ""),
@@ -199,6 +207,7 @@ async def get_me(current_user: dict = Depends(get_current_user), db: AsyncIOMoto
             role=user["role"],
             company_id=user["company_id"],
             company_name=user["company_name"],
+            country=user.get("country", "Singapore"),
             full_name=user.get("full_name", ""),
             department=user.get("department", "Unassigned"),
             job_title=user.get("job_title", ""),

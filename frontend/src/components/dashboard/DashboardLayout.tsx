@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { animate, stagger } from 'animejs';
 import { useAuth } from '@/contexts/AuthContext';
+import TerminatedScreen from '@/components/TerminatedScreen';
 import {
   LayoutDashboard, Users, Building2, Calendar, Clock,
   DollarSign, Bell, Briefcase, BarChart3, MessageSquare,
@@ -47,6 +48,8 @@ const adminNavItems = [
 const employeeNavItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/employee', description: 'Your overview' },
   { icon: User, label: 'Profile', href: '/employee/profile', description: 'Personal information' },
+  { icon: Briefcase, label: 'My Tasks', href: '/employee/tasks', description: 'Assigned tasks' },
+  { icon: BarChart3, label: 'Performance', href: '/employee/performance', description: 'Your reviews' },
   { icon: Calendar, label: 'Leave', href: '/employee/leave', description: 'Request time off' },
   { icon: Clock, label: 'Attendance', href: '/employee/attendance', description: 'Your time records' },
   // { icon: DollarSign, label: 'Salary', href: '/employee/salary', description: 'View payslips' },
@@ -77,6 +80,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     logout();
     navigate('/login');
   };
+
+  // Check if user is terminated (is_active === false)
+  if (user && user.is_active === false) {
+    return (
+      <TerminatedScreen 
+        companyName={user.company_name} 
+        onLogout={handleLogout} 
+      />
+    );
+  }
 
   // Logo animation on mount
   useEffect(() => {
@@ -502,7 +515,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
 
             {/* Notifications */}
-            <Button variant="ghost" size="icon" className="relative hover:bg-secondary">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative hover:bg-secondary"
+              onClick={() => navigate(user?.role === 'Admin' ? '/admin/notices' : '/employee/notices')}
+              data-testid="notification-bell"
+            >
               <Bell className="w-5 h-5" />
               <motion.span
                 initial={{ scale: 0 }}

@@ -138,6 +138,7 @@ class UserResponse(BaseModel):
     role: str
     company_id: str
     company_name: str
+    country: str
     full_name: str
     department: str
     job_title: str

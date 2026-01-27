@@ -5,6 +5,7 @@ export interface User {
   role: 'Admin' | 'Employee';
   company_id: string;
   company_name: string;
+  country: string;
   full_name: string;
   department: string;
   job_title: string;

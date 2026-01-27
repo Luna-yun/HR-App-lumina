@@ -14,6 +14,7 @@ import {
   Clock, Calendar, Bell, LogIn, LogOut,
   CheckCircle, XCircle, AlertCircle, ArrowRight, Sun, Moon, CloudSun, FileText
 } from 'lucide-react';
+import { getTimeString, getDateString, getHourInTimezone, getTimezoneAbbreviation } from '@/utils/timezone';
 import type { AttendanceStatus, LeaveSummary, Notice } from '@/types';
 
 export default function EmployeeDashboard() {
@@ -21,17 +22,28 @@ export default function EmployeeDashboard() {
   const [attendanceStatus, setAttendanceStatus] = useState<AttendanceStatus | null>(null);
   const [leaveSummary, setLeaveSummary] = useState<LeaveSummary | null>(null);
   const [notices, setNotices] = useState<Notice[]>([]);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTimeStr, setCurrentTimeStr] = useState('');
+  const [currentDateStr, setCurrentDateStr] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   
   const cardsRef = useRef<HTMLDivElement>(null);
 
-  // Update clock every second
+  // Get company country for timezone
+  const companyCountry = user?.country || 'Singapore';
+  const timezoneAbbr = getTimezoneAbbreviation(companyCountry);
+
+  // Update clock every second based on company country timezone
   useEffect(() => {
-    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    const updateTime = () => {
+      setCurrentTimeStr(getTimeString(companyCountry));
+      setCurrentDateStr(getDateString(companyCountry));
+    };
+    
+    updateTime(); // Initial update
+    const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
-  }, []);
+  }, [companyCountry]);
 
   // Fetch dashboard data
   useEffect(() => {
@@ -72,9 +84,9 @@ export default function EmployeeDashboard() {
     }
   }, [isLoading]);
 
-  // Get greeting based on time
+  // Get greeting based on time in company timezone
   const getGreeting = () => {
-    const hour = currentTime.getHours();
+    const hour = getHourInTimezone(companyCountry);
     if (hour < 12) return { text: 'Good Morning', icon: Sun, color: 'text-yellow-500' };
     if (hour < 18) return { text: 'Good Afternoon', icon: CloudSun, color: 'text-orange-500' };
     return { text: 'Good Evening', icon: Moon, color: 'text-indigo-500' };
@@ -171,13 +183,16 @@ export default function EmployeeDashboard() {
               </p>
             </div>
             
-            {/* Live Clock */}
+            {/* Live Clock - Company Timezone */}
             <div className="text-left lg:text-right">
               <div className="text-4xl lg:text-5xl font-bold text-white font-mono">
-                {format(currentTime, 'HH:mm:ss')}
+                {currentTimeStr}
               </div>
               <p className="text-white/70 mt-1">
-                {format(currentTime, 'EEEE, MMMM d, yyyy')}
+                {currentDateStr}
+              </p>
+              <p className="text-white/50 text-xs mt-0.5">
+                {companyCountry} ({timezoneAbbr})
               </p>
             </div>
           </div>

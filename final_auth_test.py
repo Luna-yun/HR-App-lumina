@@ -6,7 +6,7 @@ Final comprehensive test of all EMS authentication endpoints
 import requests
 import json
 
-BASE_URL = "https://lumina-staff.preview.emergentagent.com/api"
+BASE_URL = "https://hrportal-60.preview.emergentagent.com/api"
 
 def test_all_endpoints():
     print("🔍 Final Comprehensive Authentication Test")

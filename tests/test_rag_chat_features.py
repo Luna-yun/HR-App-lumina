@@ -8,7 +8,7 @@ import requests
 import os
 import time
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://lumina-staff.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://hrportal-60.preview.emergentagent.com')
 
 # Test credentials from review request
 TEST_ADMIN_EMAIL = "testadmin@lumina.com"

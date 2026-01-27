@@ -16,6 +16,7 @@ import {
   ArrowRight, ArrowUpRight, Building2, DollarSign, Bell, AlertCircle, Activity,
   Sparkles, BarChart3, PieChart, Zap, Target, Award, Briefcase, MessageSquare
 } from 'lucide-react';
+import { getShortDateString, getHourInTimezone, getTimezoneAbbreviation } from '@/utils/timezone';
 import type { AdminStats, LeaveRequest, PendingEmployee } from '@/types';
 
 // Animated counter component
@@ -161,14 +162,19 @@ export default function AdminDashboard() {
     }
   }, [isLoading]);
 
+  // Get company country for timezone
+  const companyCountry = user?.country || 'Singapore';
+  const timezoneAbbr = getTimezoneAbbreviation(companyCountry);
+
   const getGreeting = () => {
-    const hour = new Date().getHours();
+    const hour = getHourInTimezone(companyCountry);
     if (hour < 12) return { text: 'Good Morning', emoji: '☀️' };
     if (hour < 18) return { text: 'Good Afternoon', emoji: '🌤️' };
     return { text: 'Good Evening', emoji: '🌙' };
   };
 
   const greeting = getGreeting();
+  const dateString = getShortDateString(companyCountry);
 
   const handleApproveLeave = async (requestId: string) => {
     try {
@@ -298,7 +304,7 @@ export default function AdminDashboard() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-white/80 text-sm font-medium mb-1"
               >
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                {dateString} • {companyCountry} ({timezoneAbbr})
               </motion.p>
               <motion.h1 
                 initial={{ opacity: 0, y: 20 }}

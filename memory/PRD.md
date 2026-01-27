@@ -10,6 +10,20 @@ Build a comprehensive HR management application by merging functionalities and d
 
 ### ✅ Completed Features
 
+#### Employee Task & Performance Management UI (Jan 27, 2026)
+- [x] **Employee Tasks Page** - Dedicated `/employee/tasks` page showing assigned tasks
+- [x] **Task Status Updates** - Employees can update task status (Pending → In Progress → Completed) with notes
+- [x] **Employee Performance Reviews** - New `/employee/performance` page for employees to view their reviews
+- [x] **Review Detail Dialog** - Click on any review to see full feedback, scores, strengths, and improvement areas
+- [x] **Sidebar Navigation** - Added "My Tasks" and "Performance" links to employee sidebar
+- [x] **Notification Bell** - Bell icon in header now redirects to notices page (/admin/notices or /employee/notices)
+- [x] **Real Analytics** - Admin analytics dashboard shows actual calculated data:
+  - Task completion rate (from real task statuses)
+  - Average goals achieved (calculated from reviews)
+  - Average review scores (calculated from reviews)
+  - Pending tasks count
+- [x] **Country-Based Timezone** - Dashboard time displays based on company's ASEAN/Timor-Leste country timezone instead of user device time
+
 #### RAG System Overhaul & UI Enhancements (Jan 25, 2026)
 - [x] **Fixed Embedding System** - Replaced failing OpenAI API calls with local `sentence-transformers/all-MiniLM-L6-v2` model
 - [x] **Embedding Dimension** - Standardized to 384 dimensions (local model)
@@ -110,41 +124,44 @@ Build a comprehensive HR management application by merging functionalities and d
 
 ### 🔄 In Progress / Pending
 
-#### Admin Dashboard (P1)
-- [ ] AdminDashboard - Analytics overview
-- [ ] AdminEmployees - Employee management CRUD
-- [ ] AdminDepartments - Department management
-- [ ] AdminLeaves - Leave approval workflow
-- [ ] AdminAttendance - Attendance monitoring
-- [ ] AdminPayroll - Salary management
-- [ ] AdminNotices - Company announcements
-- [ ] AdminRecruitment - Job postings & candidates
-- [ ] AdminAnalytics - Workforce insights
-- [ ] AdminAIChat - AI assistant with doc upload
+#### Admin Dashboard (P1) - Most features complete
+- [x] AdminDashboard - Analytics overview - COMPLETE
+- [x] AdminEmployees - Employee management CRUD - COMPLETE
+- [x] AdminDepartments - Department management - COMPLETE
+- [x] AdminLeaves - Leave approval workflow - COMPLETE
+- [x] AdminAttendance - Attendance monitoring - COMPLETE
+- [ ] AdminPayroll - Salary management (hidden)
+- [x] AdminNotices - Company announcements - COMPLETE
+- [x] AdminRecruitment - Job postings & candidates - COMPLETE
+- [x] AdminAnalytics - Workforce insights with real data - COMPLETE
+- [x] AdminAIChat - AI assistant with RAG - COMPLETE
 - [ ] AdminProfile - Admin profile management
 
-#### Employee Dashboard (P1)
-- [ ] EmployeeDashboard - Personal overview
-- [ ] EmployeeProfile - Profile management
-- [ ] EmployeeLeave - Leave requests
-- [ ] EmployeeAttendance - Attendance history
-- [ ] EmployeeSalary - Payslip viewing
-- [ ] EmployeeNotices - Company notices
+#### Employee Dashboard (P1) - Most features complete
+- [x] EmployeeDashboard - Personal overview - COMPLETE
+- [x] EmployeeProfile - Profile management - COMPLETE
+- [x] EmployeeTasks - Task management - COMPLETE (Jan 27, 2026)
+- [x] EmployeePerformanceReviews - View reviews - COMPLETE (Jan 27, 2026)
+- [x] EmployeeLeave - Leave requests - COMPLETE
+- [x] EmployeeAttendance - Attendance history - COMPLETE
+- [ ] EmployeeSalary - Payslip viewing (hidden)
+- [x] EmployeeNotices - Company notices - COMPLETE
 
 ### 📋 Backlog / Future Tasks
 
 #### P0 - Critical
-- [ ] Connect dashboard pages to backend APIs
+- [x] Connect dashboard pages to backend APIs - COMPLETE
 
 #### P1 - High Priority
 - [ ] GSAP animations on dashboard components
-- [ ] Real-time notifications
-- [ ] File upload for AI Chat (.doc, .pdf)
+- [x] Functional notification bell - COMPLETE (Jan 27, 2026)
+- [x] Real-time task/review notifications - COMPLETE
 
 #### P2 - Medium Priority
 - [ ] Dark mode toggle (full app)
 - [ ] Multi-language support (ASEAN languages)
 - [ ] Export functionality (PDF reports)
+- [ ] Complete technical documentation (researchReport.md, architecture.md)
 
 #### P3 - Low Priority
 - [ ] Email notifications for approvals
@@ -170,7 +187,7 @@ Build a comprehensive HR management application by merging functionalities and d
 
 ### Database Schema
 ```
-User: {id, full_name, email, hashed_password, company_name, country, role}
+User: {id, full_name, email, hashed_password, company_name, country, role, is_active, is_approved}
 Attendance: {employee_id, check_in, check_out, date}
 Leave: {employee_id, start_date, end_date, reason, status}
 Salary: {employee_id, amount, effective_date}
@@ -178,6 +195,9 @@ Notice: {title, content, created_at}
 Department: {name, description}
 Candidate: {full_name, email, resume_url, status}
 JobOpening: {title, description, department_id}
+Task: {id, title, description, assigned_to, assigned_by, status, priority, category, due_date, status_history, notes}
+PerformanceReview: {id, employee_id, reviewer_id, review_period, goals_achieved, quality_score, productivity_score, teamwork_score, communication_score, overall_score, feedback, strengths, areas_for_improvement}
+Notification: {id, title, message, type, target_user_id, is_read, link, created_at}
 ```
 
 ## Design Standards
@@ -190,4 +210,4 @@ JobOpening: {title, description, department_id}
 - Enterprise-grade visual language
 
 ## Last Updated
-January 20, 2026
+January 27, 2026

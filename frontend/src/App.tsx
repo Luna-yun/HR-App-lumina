@@ -41,9 +41,14 @@ import EmployeeLeave from '@/pages/employee/EmployeeLeave';
 import EmployeeAttendance from '@/pages/employee/EmployeeAttendance';
 import EmployeeSalary from '@/pages/employee/EmployeeSalary';
 import EmployeeNotices from '@/pages/employee/EmployeeNotices';
+import EmployeeTasks from '@/pages/employee/EmployeeTasks';
+import EmployeePerformanceReviews from '@/pages/employee/EmployeePerformanceReviews';
 
 // 404 Page
 import NotFound from '@/pages/NotFound';
+
+// Public Career Pages
+import CareerJobPage from '@/pages/CareerJobPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -120,6 +125,9 @@ function AppRoutes() {
       <Route path="/features/workflow-automation" element={<WorkflowAutomation />} />
       <Route path="/features/team" element={<Team />} />
 
+      {/* Public Career Pages (Shareable Job Links) */}
+      <Route path="/careers/:jobId" element={<CareerJobPage />} />
+
       {/* Admin Dashboard Routes */}
       <Route path="/admin" element={<ProtectedRoute allowedRoles={['Admin']}><AdminDashboard /></ProtectedRoute>} />
       <Route path="/admin/employees" element={<ProtectedRoute allowedRoles={['Admin']}><AdminEmployees /></ProtectedRoute>} />
@@ -136,6 +144,8 @@ function AppRoutes() {
       {/* Employee Dashboard Routes */}
       <Route path="/employee" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeDashboard /></ProtectedRoute>} />
       <Route path="/employee/profile" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeProfile /></ProtectedRoute>} />
+      <Route path="/employee/tasks" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeTasks /></ProtectedRoute>} />
+      <Route path="/employee/performance" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeePerformanceReviews /></ProtectedRoute>} />
       <Route path="/employee/leave" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeLeave /></ProtectedRoute>} />
       <Route path="/employee/attendance" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeAttendance /></ProtectedRoute>} />
       <Route path="/employee/salary" element={<ProtectedRoute allowedRoles={['Employee']}><EmployeeSalary /></ProtectedRoute>} />

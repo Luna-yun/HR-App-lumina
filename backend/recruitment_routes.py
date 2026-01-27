@@ -83,6 +83,10 @@ async def create_job_posting(
         company_id = current_user["company_id"]
         admin_id = current_user["sub"]
         
+        # Get company name for notice
+        company = await db.companies.find_one({"id": company_id})
+        company_name = company["name"] if company else "Our Company"
+        
         job = JobPosting(
             company_id=company_id,
             title=request.title,
@@ -97,6 +101,52 @@ async def create_job_posting(
         )
         
         await db.job_postings.insert_one(job.dict())
+        
+        # Create a notice about the job posting
+        from models import Notice
+        
+        # Build HTML content for the notice
+        notice_content = f"""
+        <div style="font-family: system-ui, sans-serif;">
+            <h2 style="color: #1e40af; margin-bottom: 16px;">🎉 We're Hiring: {job.title}</h2>
+            
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <p style="margin: 0 0 12px 0;"><strong>📍 Department:</strong> {job.department}</p>
+                <p style="margin: 0 0 12px 0;"><strong>📌 Location:</strong> {job.location or 'To be discussed'}</p>
+                <p style="margin: 0 0 12px 0;"><strong>⏰ Type:</strong> {job.employment_type}</p>
+                {f'<p style="margin: 0;"><strong>💰 Salary:</strong> {job.salary_range}</p>' if job.salary_range else ''}
+            </div>
+            
+            <h3 style="color: #374151; margin-bottom: 8px;">About the Role</h3>
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 16px;">{job.description[:500]}{'...' if len(job.description) > 500 else ''}</p>
+            
+            <h3 style="color: #374151; margin-bottom: 8px;">Requirements</h3>
+            <p style="color: #4b5563; line-height: 1.6; margin-bottom: 20px;">{job.requirements[:400]}{'...' if len(job.requirements) > 400 else ''}</p>
+            
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <p style="margin: 0; color: #92400e;">
+                    <strong>Know someone perfect for this role?</strong><br>
+                    Share this opportunity with your network! Referrals are always appreciated.
+                </p>
+            </div>
+            
+            <p style="margin-top: 20px; padding: 12px; background: #f3f4f6; border-radius: 8px; text-align: center;">
+                <strong>Apply now or share:</strong><br>
+                <a href="/careers/{job.id}" style="color: #2563eb; text-decoration: none;">View Full Job Details & Apply →</a>
+            </p>
+        </div>
+        """
+        
+        notice = Notice(
+            company_id=company_id,
+            title=f"🚀 New Job Opening: {job.title}",
+            content=notice_content,
+            published_by=admin_id,
+            publisher_name=current_user.get("email", "HR Department").split("@")[0].title()
+        )
+        
+        await db.notices.insert_one(notice.dict())
+        logger.info(f"Created notice for job posting: {job.title}")
         
         return JobPostingResponse(
             id=job.id,
@@ -544,6 +594,159 @@ async def get_recruitment_stats(
     
     except Exception as e:
         logger.error(f"Get recruitment stats error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred"
+        )
+
+
+# ==================
+# PUBLIC JOB ENDPOINTS (Shareable)
+# ==================
+
+@router.get("/careers/{job_id}")
+async def get_public_job(
+    job_id: str,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Get public job posting details (No auth required - for shareable links)"""
+    try:
+        job = await db.job_postings.find_one({"id": job_id})
+        
+        if not job:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job posting not found"
+            )
+        
+        # Only show open jobs publicly
+        if job.get("status") != RecruitmentStatus.OPEN:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="This job posting is no longer available"
+            )
+        
+        # Get company name
+        company = await db.companies.find_one({"id": job["company_id"]})
+        company_name = company["name"] if company else "Company"
+        company_country = company.get("country", "") if company else ""
+        
+        return {
+            "id": job["id"],
+            "title": job["title"],
+            "department": job["department"],
+            "description": job["description"],
+            "requirements": job["requirements"],
+            "salary_range": job.get("salary_range", ""),
+            "location": job.get("location", ""),
+            "employment_type": job.get("employment_type", "Full-time"),
+            "company_name": company_name,
+            "company_country": company_country,
+            "created_at": job["created_at"],
+            "is_open": True
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Get public job error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred"
+        )
+
+
+@router.get("/careers")
+async def get_public_jobs(
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Get all open job postings (No auth required - public careers page)"""
+    try:
+        jobs = await db.job_postings.find({
+            "status": RecruitmentStatus.OPEN
+        }).sort("created_at", -1).to_list(100)
+        
+        result = []
+        for job in jobs:
+            company = await db.companies.find_one({"id": job["company_id"]})
+            company_name = company["name"] if company else "Company"
+            
+            result.append({
+                "id": job["id"],
+                "title": job["title"],
+                "department": job["department"],
+                "location": job.get("location", ""),
+                "employment_type": job.get("employment_type", "Full-time"),
+                "company_name": company_name,
+                "created_at": job["created_at"]
+            })
+        
+        return {"jobs": result, "total": len(result)}
+    
+    except Exception as e:
+        logger.error(f"Get public jobs error: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred"
+        )
+
+
+@router.post("/careers/{job_id}/apply")
+async def apply_for_job(
+    job_id: str,
+    request: ApplicantCreate,
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Apply for a job (Public - no auth required)"""
+    try:
+        job = await db.job_postings.find_one({"id": job_id})
+        
+        if not job:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job posting not found"
+            )
+        
+        if job.get("status") != RecruitmentStatus.OPEN:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This job is no longer accepting applications"
+            )
+        
+        # Check if already applied
+        existing = await db.applicants.find_one({
+            "job_posting_id": job_id,
+            "email": request.email
+        })
+        
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You have already applied for this position"
+            )
+        
+        applicant = Applicant(
+            company_id=job["company_id"],
+            job_posting_id=job_id,
+            name=request.name,
+            email=request.email,
+            phone=request.phone,
+            cover_letter=request.cover_letter,
+            resume_url=request.resume_url,
+            status=ApplicantStatus.NEW
+        )
+        
+        await db.applicants.insert_one(applicant.dict())
+        
+        return {
+            "message": "Application submitted successfully! We'll be in touch soon.",
+            "applicant_id": applicant.id
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Apply for job error: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred"

@@ -1,238 +1,159 @@
-<analysis>**original_problem_statement:** The user wants to build a comprehensive HR management application named Lumina by merging functionalities and designs from two separate GitHub repositories. The backend logic and landing page are from , while the premium dashboard UI is inspired by .
+<analysis>**original_problem_statement:** The user wants to build a comprehensive HR management application named Lumina. The initial goal was to merge functionalities from two GitHub repositories. The project has since evolved with numerous feature requests.
 
 **PRODUCT REQUIREMENTS:**
-1.  **Backend:** Use the FastAPI backend from  and connect it to the new frontend.
-2.  **Dashboards:** Implement high-quality, professional Admin and Employee dashboards with a world-class, interactive, and immersive UI featuring micro-animations.
-3.  **Authentication UI:** Redesigned login (Email/Password) and signup pages.
-4.  **Landing Page:** An exact replica of the  landing page.
-5.  **AI Chatbot (RAG):** Implement an AI chat feature for HR Admins using Groq for inference and a vector database (Qdrant) for Retrieval-Augmented Generation. It must support file uploads, document deletion, and chat history.
-6.  **Employee Management:**
-    *   Allow admins to approve new employee registrations.
-    *   Assign employees to departments.
-    *   Terminate employees with a reason.
-    *   Bulk-import employees via file upload.
-7.  **Performance Management:** Allow admins to assign tasks to employees and conduct performance reviews.
-8.  **Notifications:** Implement a real-time notification system for both admin and employee users.
-9.  **Documentation:** Create detailed technical documentation (, ) explaining the RAG system and database architecture.
+1.  **Backend:** FastAPI backend connected to a new React frontend.
+2.  **Dashboards:** High-quality, professional Admin and Employee dashboards.
+3.  **Authentication UI:** Redesigned login, signup, and a locked screen for terminated employees.
+4.  **Landing Page:** A professional landing page with a working contact form.
+5.  **AI Chatbot (RAG):** An AI chat feature for HR Admins using Groq for inference and Qdrant for RAG. It must support file uploads, document deletion, and show real-time progress indicators.
+6.  **Employee Management:** Admins can approve new employees, assign them to departments, and terminate them.
+7.  **Task & Performance Management:** Admins can assign tasks. Employees must be able to see their tasks, update their status, and view their performance reviews.
+8.  **Analytics:** The admin analytics dashboard must be powered by real, calculated data from the backend.
+9.  **Recruitment:** Creating a job posting should automatically generate a company-wide notice and a public, shareable link.
+10. **Notifications:** A real-time notification system. The notification bell in the UI should be functional.
+11. **Documentation:** Create detailed technical documentation (, ).
 
 **User's preferred language**: English
 
 **what currently exists?**
-The application is a full-stack HR platform. The frontend features a complete landing page, redesigned admin/employee dashboards, and scaffolded UI for new features like performance analytics and employee management. The backend has most of the required API endpoints, including a RAG system for the AI chatbot, authentication, notifications, and new routes for performance and employee termination. The critical blank screen after login blocker has been resolved, and all pop-up dialogs are now correctly centered. However, the RAG system and several UI components are currently broken.
+The application is a full-stack HR platform. The backend uses FastAPI and MongoDB, and the frontend is built with React and TailwindCSS.
+
+Key implemented features include:
+*   A fully functional RAG-based AI Chatbot using  for embeddings (solving a critical deployment blocker) with UI progress indicators and document deletion.
+*   A complete user authentication flow, including signup, login, admin approval for new employees, and a locked screen for terminated employees.
+*   A landing page with a working contact form that sends emails via the Resend API.
+*   Admin and Employee dashboards where payroll/salary sections have been hidden.
+*   Admin dashboard stats are now powered by real API data.
+*   A job posting feature that automatically creates a company-wide notice and a public, shareable career page.
+*   Fixed various UI bugs, including non-functional dropdowns and incorrect HTML rendering in notices.
 
 **Last working item**:
-- **Last item agent was working:** The agent was investigating why the AI Chat (RAG) feature was failing with the error . The agent correctly deduced that the previously configured  cannot be used for direct API calls to OpenAI and that the  library must be used instead. The agent had requested the integration playbook for openai embeddings but received a generic response and was about to search for the correct implementation method.
-- **Status:** BLOCKED
+- **Last item agent was working:** The agent was beginning to implement a complete task and performance management system for employees, as requested by the user. This involves creating dedicated pages for employees to view tasks and reviews, and ensuring the admin analytics are calculated from real data. The agent had just created the file for the employee tasks page. The user also requested that the notification bell in the header be made functional.
+- **Status:** IN PROGRESS
 - **Agent Testing Done:** N
-- **Which testing method agent to use?** Backend testing agent to verify the embedding API calls after the fix. Manual testing with  to test the entire RAG flow (upload, query).
 - **User Testing Done:** N
+- **Which testing method agent to use?** frontend testing agent after the UI is built, and backend testing agent to verify the new analytics calculations.
 
 **All Pending/In progress Issue list**:
-- **Issue 1: AI Chat RAG System Failure (P0)**: The core RAG functionality is broken. Both document upload and chat queries fail with a 500 Internal Server Error, responding . This is the highest priority issue.
-- **Issue 2: Non-Functional Dropdowns in Dialogs (P1)**: Dropdown menus (e.g., Select Department, Select Employee) inside pop-up dialogs are not working. They render underneath the dialog modal due to a  conflict, making them un-clickable.
-- **Issue 3: Missing Employee Approval UI (P1)**: New employees can register, but there is no UI button or mechanism in the admin dashboard for an administrator to approve their accounts, preventing them from logging in.
-
-**Issues Detail:**
-- **Issue 1: AI Chat RAG System Failure**
-    - **Attempted fixes:** The agent refactored the backend from using a local  model to the OpenAI embeddings API to resolve deployment issues. It added the  to the environment variables. This fix introduced the current Failed to generate embedding error.
-    - **Next debug checklist:**
-        1.  Do not use the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit library directly. Call the  subagent for **OpenAI Embeddings with Emergent LLM Key** to get the correct playbook.
-        2.  Refactor  to use the  library for generating embeddings as specified in the playbook.
-        3.  Verify the  is correctly passed to the integration library function.
-        4.  Test the fix by uploading a new document and asking a question related to its content.
-    - **Why fix this issue and what will be achieved with the fix?** This will restore the core functionality of the AI Chatbot, which is a key product requirement.
-    - **Status:** IN PROGRESS
-    - **Is recurring issue?** Y (The RAG system has failed for different reasons before).
-    - **Should Test frontend/backend/both after fix?** Backend.
-    - **Blocked on other issue:** None.
-
-- **Issue 2: Non-Functional Dropdowns in Dialogs**
-    - **Attempted fixes:** The agent correctly identified the  conflict between the  component () and the  component (). It attempted a fix by editing , but this has not been verified.
-    - **Next debug checklist:**
-        1.  Inspect the  component in .
-        2.  Ensure that when the select is open, its  is higher than the dialog's  (e.g., ).
-        3.  Verify the fix on the Assign Department dialog within the  page.
-        4.  Check other dialogs that contain dropdowns, like Create Performance Review.
-    - **Why fix this issue and what will be achieved with the fix?** This will restore critical functionality for assigning departments, creating performance reviews, and other actions that rely on dropdowns within modals.
-    - **Status:** IN PROGRESS
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Frontend.
-    - **Blocked on other issue:** None.
-
-- **Issue 3: Missing Employee Approval UI**
-    - **Attempted fixes:** The agent started overhauling the  page to include an Approve button for unapproved users but did not complete or test the implementation.
-    - **Next debug checklist:**
-        1.  In , modify the rendering logic for each employee card/row.
-        2.  If an employee has , display an Approve button.
-        3.  The Approve button should call the  function from .
-        4.  Upon successful API response, the UI should update to show the employee as approved (e.g., remove the button, show an Active status).
-    - **Why fix this issue and what will be achieved with the fix?** This will complete the employee registration workflow, allowing admins to manage new sign-ups.
-    - **Status:** IN PROGRESS
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Both.
-    - **Blocked on other issue:** None.
+- No critical bugs are pending. The work has shifted to new feature development.
 
 **In progress Task List**:
-- None.
+- **Task 1: Implement Employee Task Management (P0)**
+    - **Where to resume:** Populate the newly created file  with the UI for listing and updating tasks.
+    - **What will be achieved with this?** Employees will be able to view tasks assigned to them by admins and update their status (e.g., To Do, In Progress, Completed), with the ability to add notes.
+    - **Status:** IN PROGRESS
+    - **Should Test frontend/backend/both after fix?** Both.
+- **Task 2: Implement Employee Performance Review Visibility (P1)**
+    - **Where to resume:** Create the frontend page  and a corresponding backend endpoint () for employees to fetch their reviews.
+    - **What will be achieved with this?** Employees will be able to view their own performance reviews submitted by admins.
+    - **Status:** NOT STARTED
+    - **Should Test frontend/backend/both after fix?** Both.
+- **Task 3: Calculate Real Analytics Data (P1)**
+    - **Where to resume:** Modify the backend endpoint  in  to perform real calculations for task completion rates and average review scores instead of returning dummy data.
+    - **What will be achieved with this?** The admin analytics dashboard will display accurate, meaningful metrics.
+    - **Status:** NOT STARTED
+    - **Should Test frontend/backend/both after fix?** Backend.
+- **Task 4: Make Notification Bell Functional (P2)**
+    - **Where to resume:** In , locate the notification bell component in the header.
+    - **What will be achieved with this?** Clicking the notification bell will redirect the user to their respective notices page ( or ).
+    - **Status:** NOT STARTED
+    - **Should Test frontend/backend/both after fix?** Frontend.
 
 **Upcoming and Future Tasks**
 - **Upcoming Tasks:**
-    - **(P0) Add Document Deletion UI:** Implement a Delete button for each document in the AI Chat's knowledge base UI () that calls the corresponding backend endpoint.
-    - **(P1) Implement RAG Process Indicator:** Add toasts or a status indicator in the UI to show the user the steps of document processing (e.g., Uploading, Chunking, Generating Embeddings, Done) and chat response generation (Searching knowledge base, Thinking...).
-    - **(P1) Improve Assign Department UX:** Move the Assign Department action from the  menu to be directly visible on the employee card in .
-    - **(P2) Write Technical Documentation:** Create  and  in the  directory with detailed explanations of the RAG system and database schema, suitable for a technical paper.
+    - **(P2) Complete Technical Documentation:** Populate the  and  files with detailed content about the RAG system and application architecture, suitable for a technical paper.
 - **Future Tasks:**
-    - Implement GSAP/anime.js micro-interactions across all remaining dashboard components.
-    - Conduct a full regression test of the entire application.
-    - Fix the ESLint configuration for TypeScript in the frontend.
+    - Implement GSAP/anime.js micro-interactions across dashboard components for a more premium feel.
+    - Implement a user feedback loop for RAG relevance improvement.
+    - Add hybrid search (keyword + vector) to the RAG system.
+    - Add a fallback to a general-purpose LLM for queries outside the knowledge base.
+    - Fix the frontend ESLint configuration for TypeScript to avoid false-positive errors.
 
 **Completed work in this session**
-- **Blank Screen Blocker (DONE):** Fixed the backend crash caused by an  in , restoring access to all dashboards.
-- **Dialog Centering (DONE):** Fixed a CSS transform conflict, ensuring all pop-up dialogs are correctly centered on both desktop and mobile.
-- **WYSIWYG Editor (DONE):** Integrated the TipTap rich text editor into the Add Notice dialog.
-- **RAG System Refactor (IN PROGRESS - BLOCKED):**
-    - Replaced a non-functional hash-based embedding with a local Sentence Transformers model.
-    - Replaced the local model with the OpenAI embeddings API to resolve deployment issues, which introduced a new bug.
-- **New Feature Scaffolding (DONE):**
-    - Created backend endpoints for employee termination, bulk import, and performance reviews (, ).
-    - Created frontend pages/components for employee management () and performance analytics ().
+- **RAG System Deployment Fix (DONE):** Replaced  (requiring CUDA) with the CPU-only  library, resolving a critical deployment blocker.
+- **RAG UI Enhancements (DONE):** Added detailed progress indicators for document processing and chat, and implemented the document deletion UI.
+- **Contact Form (DONE):** Implemented a backend endpoint using Resend to send emails from the landing page contact form and updated the API key as requested.
+- **Country List Update (DONE):** Added Timor-Leste to the signup country dropdown and backend validation.
+- **UI Cleanup (DONE):**
+    - Hid all Payroll and Salary related items from admin and employee dashboards.
+    - Fixed an issue where raw HTML tags were displayed on notice pages.
+- **Terminated Employee Flow (DONE):** Implemented a lock screen for terminated employees, preventing login and showing a polite message.
+- **Job Posting Automation (DONE):** When a job is created, a notice is automatically posted, and a public, shareable career page is available.
+- **Admin Dashboard Stats (DONE):** Connected the main dashboard statistics to the live backend API, replacing dummy data.
+- **Testing (DONE):** Ran a full test suite using the testing agent, which passed. Performed extensive manual testing on all new features.
 
 **Known issue recurrence from previous fork**
-- The RAG system has failed multiple times due to different root causes (bad embedding logic, outdated client library, incorrect API usage).
+- **Issue recurrence in previous fork:** The RAG system has been a recurring point of failure, previously due to embedding logic and this time due to deployment dependencies (CUDA).
+- **Recurrence count:** 2
+- **Status:** RESOLVED. The switch to the lightweight  library has made the implementation more robust and portable, addressing the root cause of the deployment failure.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
-*   **Frontend:** React, TypeScript, Vite, TailwindCSS, Shadcn UI, 
+*   **Frontend:** React, TypeScript, Vite, TailwindCSS, Shadcn UI
 *   **Backend:** FastAPI, Python, Motor (async MongoDB driver)
 *   **Database:** MongoDB Atlas
-*   **Authentication:** JWT
-*   **AI/LLM:** Groq (LLM Inference), OpenAI API (Embeddings), Qdrant (Vector Store),  (Required for Embeddings)
-
-**key DB schema**
--   **Task:**  (New)
--   **PerformanceReview:**  (New)
+*   **AI/LLM:** Groq (LLM Inference),  (CPU Embeddings), Qdrant (Vector Store)
+*   **Email:** Resend API
 
 **All files of reference**
-*   **/app/backend/ai_chat_routes.py**: Contains the broken RAG implementation. Needs to be fixed using .
-*   **/app/frontend/src/components/ui/select.tsx**: Contains the attempted fix for the  issue.
-*   **/app/frontend/src/pages/admin/AdminEmployees.tsx**: Contains the UI for employee management and needs the Approve button functionality.
-*   **/app/frontend/src/components/ui/dialog.tsx**: Contains the correct implementation for centered dialogs.
+*   **/app/backend/performance_routes.py**: Needs to be updated to calculate real analytics data.
+*   **/app/frontend/src/pages/employee/EmployeeTasks.tsx**: New file, needs UI implementation for task management.
+*   **/app/frontend/src/components/dashboard/DashboardLayout.tsx**: Needs to be modified to make the notification bell functional.
+*   **/app/backend/ai_chat_routes.py**: Contains the fixed RAG implementation using .
+*   **/app/backend/contact_routes.py**: Contains the new Resend email integration.
+*   **/app/backend/recruitment_routes.py**: Contains the logic for auto-creating notices from job postings.
 
 **Critical Info for New Agent**
-*   **RAG System Blocker:** Your immediate priority is to fix the AI chat's embedding generation. **Do not use the usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit library directly.** You must use the  library to make embedding calls with the . Call  to get the correct playbook for this.
-*   **UI Bugs:** After fixing the RAG system, address the two critical UI bugs: the non-functional dropdowns inside dialogs (likely a  issue in ) and the missing Approve Employee button in .
-*   **User Standards:** The user has very high standards for UI/UX, expecting a world-class and premium feel. Pay close attention to visual details and interactions.
+*   **Immediate Priorities:** Your main focus should be on building out the employee-facing features: Task Management and Performance Review pages. Concurrently, implement the backend logic for calculating analytics and make the UI notification bell functional.
+*   **RAG System:** The RAG system is stable and now uses the  library for CPU-based embeddings. This was a critical fix to solve deployment issues related to CUDA.
+*   **Email Sending:** The contact form uses the Resend API. The user provided a new API key () which has been added to . It is configured to send emails to .
+*   **Terminated Users:** The login flow now correctly handles terminated () users, preventing access and showing a specific error message on the frontend. The  component locks the UI if a terminated user somehow gets a valid token.
 
 **documents and test reports created in this job**
-*    (Updated)
+*   /app/backend/researchReport.md
+*   /app/backend/architecture.md
+*   /app/test_reports/iteration_1.json
+*   /app/memory/PRD.md
 
 **Last 10 User Messages and any pending HUMAN messages**
-1.  **User:** Reports login is failing. (ADDRESSED - Agent confirmed it was working).
-2.  **User:** Thanks agent, but reports multiple new critical issues:
-    *   No UI to approve new employee registrations. (PENDING)
-    *   Dropdowns inside dialogs are not working (z-index issue suspected). (PENDING)
-    *   Requests Assign Department be moved out of the  menu. (PENDING)
-    *   Reports the RAG system is failing with  error on both upload and chat. (PENDING - HIGHEST PRIORITY)
-    *   Requests UI progress indicators for RAG operations. (PENDING)
-    *   Requests a UI button for document deletion. (PENDING)
-    *   Requests detailed technical documentation (, ) be created after all fixes. (PENDING)
+1.  **User:** Asks to implement a locked screen for terminated employees and automate job postings to company notices with a shareable link. (COMPLETED)
+2.  **User:** Asks for employees to see and update their tasks, view performance reviews, and for the admin analytics to be calculated from real data. (IN PROGRESS)
+3.  **User:** Also asks for the notification bell to redirect to the notices page. (PENDING)
+4.  **User:** Asks for an explanation of backend and database methods. (COMPLETED)
+5.  **User:** Asks for an explanation of the employee termination method. (COMPLETED)
+6.  **User:** Requests the contact form to send emails to  and to hide the payroll section from the admin dashboard. (COMPLETED)
+7.  **User:** Asks for an alternative to Resend for sending emails. (ADDRESSED - Agent provided options).
+8.  **User:** Decides to stick with Resend and provides a new API key. (COMPLETED)
+9.  **User:** Reports the frontend preview is blank. (ADDRESSED - Agent fixed a JS error).
+10. **User:** Reports several UI issues: dummy data on the admin dashboard, payroll card still visible, and raw HTML tags in notices. (COMPLETED)
 
 **Project Health Check:**
 *   **Broken:**
-    *   The AI Chat (RAG) system is non-functional.
-    *   Key UI interactions (dropdowns in dialogs, employee approval) are broken or missing.
+    *   Employee-side task and performance review management is non-existent.
+    - The admin analytics page is not yet connected to real, calculated data.
+    *   The notification bell in the dashboard header is not functional.
 *   **Mocked:** None.
 
 **3rd Party Integrations**
-*   **MongoDB Atlas**
+*   **MongoDB Atlas** (Database)
 *   **Groq** (LLM Inference)
 *   **Qdrant** (Vector DB)
-*   **OpenAI Embeddings** (via  library, requires Emergent LLM Key)
-*   **anime.js**
+*   **fastembed** (CPU-based text embeddings)
+*   **Resend** (Transactional Emails) - requires User API Key.
+*   **anime.js** (Frontend animations)
 
 **Testing status**
-*   **Testing agent used after significant changes:** NO
-*   **Troubleshoot agent used after agent stuck in loop:** NO
-*   **Test files created:** None.
-*   **Known regressions:** AI Chat RAG system, dropdown functionality within dialogs.
+- **Testing agent used after significant changes:** YES
+- **Troubleshoot agent used after agent stuck in loop:** NO
+- **Test files created:** []
+- **Known regressions:** None.
 
 **Credentials to test flow:**
-*   Create new users (admin and employee roles) via the signup page.
-    *   Admin:  / 
-    *   Employee:  /  (will require admin approval after fix)</analysis>
+*   **Admin:**  / 
+*   To test the full employee flow, it is recommended to sign up a new employee account, have the admin approve it, and then assign tasks to that employee.
+
+**What agent forgot to execute**
+*   The agent created  but did not create the corresponding page for performance reviews () which was part of the same user request.
+*   The technical documentation files (, ) were created as empty scaffolds but have not been populated with content yet.</analysis>
