@@ -30,6 +30,7 @@ import AdminAttendance from '@/pages/admin/AdminAttendance';
 import AdminPayroll from '@/pages/admin/AdminPayroll';
 import AdminNotices from '@/pages/admin/AdminNotices';
 import AdminRecruitment from '@/pages/admin/AdminRecruitment';
+import AdminApplicants from '@/pages/admin/AdminApplicants';
 import AdminAnalytics from '@/pages/admin/AdminAnalytics';
 import AdminAIChat from '@/pages/admin/AdminAIChat';
 import AdminProfile from '@/pages/admin/AdminProfile';
@@ -137,6 +138,7 @@ function AppRoutes() {
       <Route path="/admin/payroll" element={<ProtectedRoute allowedRoles={['Admin']}><AdminPayroll /></ProtectedRoute>} />
       <Route path="/admin/notices" element={<ProtectedRoute allowedRoles={['Admin']}><AdminNotices /></ProtectedRoute>} />
       <Route path="/admin/recruitment" element={<ProtectedRoute allowedRoles={['Admin']}><AdminRecruitment /></ProtectedRoute>} />
+      <Route path="/admin/recruitment/:jobId/applicants" element={<ProtectedRoute allowedRoles={['Admin']}><AdminApplicants /></ProtectedRoute>} />
       <Route path="/admin/analytics" element={<ProtectedRoute allowedRoles={['Admin']}><AdminAnalytics /></ProtectedRoute>} />
       <Route path="/admin/ai-chat" element={<ProtectedRoute allowedRoles={['Admin']}><AdminAIChat /></ProtectedRoute>} />
       <Route path="/admin/profile" element={<ProtectedRoute allowedRoles={['Admin']}><AdminProfile /></ProtectedRoute>} />
