@@ -202,6 +202,11 @@ export default function CareerJobPage() {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">{job.title}</h1>
             
             <div className="flex flex-wrap gap-3">
+              {!job.is_open && (
+                <Badge variant="destructive" className="gap-1.5 px-3 py-1.5">
+                  Position Closed
+                </Badge>
+              )}
               <Badge variant="secondary" className="gap-1.5 px-3 py-1.5">
                 <Briefcase className="w-3.5 h-3.5" />
                 {job.department}
@@ -264,36 +269,57 @@ export default function CareerJobPage() {
               {/* Apply Card */}
               <Card className="sticky top-24">
                 <CardContent className="pt-6">
-                  <h3 className="font-semibold text-lg mb-4">Interested in this role?</h3>
-                  <Button 
-                    className="w-full mb-4" 
-                    size="lg"
-                    onClick={() => setShowApplyDialog(true)}
-                  >
-                    Apply Now
-                  </Button>
-                  
-                  {/* Share Options */}
-                  <div className="pt-4 border-t">
-                    <p className="text-sm text-muted-foreground mb-3">Share this opportunity:</p>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="icon" onClick={() => handleShare('linkedin')}>
-                        <Linkedin className="w-4 h-4" />
+                  {job.is_open ? (
+                    <>
+                      <h3 className="font-semibold text-lg mb-4">Interested in this role?</h3>
+                      <Button 
+                        className="w-full mb-4" 
+                        size="lg"
+                        onClick={() => setShowApplyDialog(true)}
+                      >
+                        Apply Now
                       </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleShare('twitter')}>
-                        <Twitter className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleShare('facebook')}>
-                        <Facebook className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleShare('email')}>
-                        <Mail className="w-4 h-4" />
-                      </Button>
-                      <Button variant="outline" size="icon" onClick={() => handleShare('copy')}>
-                        <Copy className="w-4 h-4" />
-                      </Button>
+                    </>
+                  ) : (
+                    <div className="text-center py-4">
+                      <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center mx-auto mb-3">
+                        <Briefcase className="w-6 h-6 text-red-500" />
+                      </div>
+                      <h3 className="font-semibold text-lg mb-2">Position Closed</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        This position is no longer accepting applications.
+                      </p>
+                      <Link to="/">
+                        <Button variant="outline" className="w-full">
+                          View Other Opportunities
+                        </Button>
+                      </Link>
                     </div>
-                  </div>
+                  )}
+                  
+                  {/* Share Options - Only show for open jobs */}
+                  {job.is_open && (
+                    <div className="pt-4 border-t">
+                      <p className="text-sm text-muted-foreground mb-3">Share this opportunity:</p>
+                      <div className="flex gap-2">
+                        <Button variant="outline" size="icon" onClick={() => handleShare('linkedin')}>
+                          <Linkedin className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handleShare('twitter')}>
+                          <Twitter className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handleShare('facebook')}>
+                          <Facebook className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handleShare('email')}>
+                          <Mail className="w-4 h-4" />
+                        </Button>
+                        <Button variant="outline" size="icon" onClick={() => handleShare('copy')}>
+                          <Copy className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -301,7 +327,8 @@ export default function CareerJobPage() {
         </motion.div>
       </main>
 
-      {/* Apply Dialog */}
+      {/* Apply Dialog - Only render for open jobs */}
+      {job.is_open && (
       <Dialog open={showApplyDialog} onOpenChange={setShowApplyDialog}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
@@ -401,6 +428,7 @@ export default function CareerJobPage() {
           )}
         </DialogContent>
       </Dialog>
+      )}
     </div>
   );
 }

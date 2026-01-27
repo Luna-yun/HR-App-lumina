@@ -346,7 +346,7 @@ export const recruitmentAPI = {
   },
 
   updateJobStatus: async (jobId: string, status: string): Promise<{ message: string }> => {
-    const response = await api.put(`/admin/jobs/${jobId}/status?new_status=${status}`);
+    const response = await api.put(`/admin/jobs/${jobId}/status`, { status });
     return response.data;
   },
 

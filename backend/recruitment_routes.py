@@ -1,13 +1,14 @@
 from fastapi import APIRouter, HTTPException, status, Depends
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import List, Optional
+from pydantic import BaseModel
 import logging
 from datetime import datetime
 
 from models import (
     JobPosting, JobPostingCreate, JobPostingResponse,
     Applicant, ApplicantCreate, ApplicantResponse,
-    RecruitmentStatus, ApplicantStatus
+    RecruitmentStatus, ApplicantStatus, Notice
 )
 from auth_utils import get_current_user, get_current_admin
 
@@ -237,21 +238,26 @@ async def update_job_posting(
         )
 
 
+class JobStatusUpdate(BaseModel):
+    status: str  # open, closed, on_hold
+
+
 @router.put("/admin/jobs/{job_id}/status")
 async def update_job_status(
     job_id: str,
-    new_status: str,
+    request: JobStatusUpdate,
     current_user: dict = Depends(get_current_admin),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Update job posting status (Admin only)"""
     try:
         company_id = current_user["company_id"]
+        new_status = request.status
         
         if new_status not in [RecruitmentStatus.OPEN, RecruitmentStatus.CLOSED, RecruitmentStatus.ON_HOLD]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid status"
+                detail="Invalid status. Must be 'open', 'closed', or 'on_hold'"
             )
         
         job = await db.job_postings.find_one({"id": job_id})
@@ -274,6 +280,23 @@ async def update_job_status(
                 "updated_at": datetime.utcnow()
             }}
         )
+        
+        # If closing the job, create a notice
+        if new_status == RecruitmentStatus.CLOSED:
+            notice_content = f"""
+The position **{job['title']}** in **{job['department']}** is now closed and no longer accepting applications.
+
+Thank you to all applicants who showed interest in this opportunity.
+            """.strip()
+            
+            notice = Notice(
+                company_id=company_id,
+                title=f"📋 Position Closed: {job['title']}",
+                content=notice_content,
+                published_by=current_user.get("sub", ""),
+                publisher_name=current_user.get("email", "HR Department").split("@")[0].title()
+            )
+            await db.notices.insert_one(notice.dict())
         
         return {"message": f"Job status updated to {new_status}"}
     
@@ -619,17 +642,13 @@ async def get_public_job(
                 detail="Job posting not found"
             )
         
-        # Only show open jobs publicly
-        if job.get("status") != RecruitmentStatus.OPEN:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="This job posting is no longer available"
-            )
-        
         # Get company name
         company = await db.companies.find_one({"id": job["company_id"]})
         company_name = company["name"] if company else "Company"
         company_country = company.get("country", "") if company else ""
+        
+        # Check if job is open for applications
+        is_open = job.get("status") == RecruitmentStatus.OPEN
         
         return {
             "id": job["id"],
@@ -643,7 +662,8 @@ async def get_public_job(
             "company_name": company_name,
             "company_country": company_country,
             "created_at": job["created_at"],
-            "is_open": True
+            "is_open": is_open,
+            "status": job.get("status", "open")
         }
     
     except HTTPException:

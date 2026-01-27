@@ -471,11 +471,12 @@ class Applicant(BaseModel):
     updated_at: Optional[datetime] = None
 
 class ApplicantCreate(BaseModel):
-    job_posting_id: str
+    job_posting_id: Optional[str] = None  # Optional since it can come from URL path
     name: str
     email: str
     phone: str = ""
     cover_letter: str = ""
+    resume_url: str = ""
 
 class ApplicantResponse(BaseModel):
     id: str
