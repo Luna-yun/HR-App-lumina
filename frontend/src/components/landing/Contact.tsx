@@ -13,7 +13,8 @@ import {
   Globe,
   ArrowRight,
   Sparkles,
-  Check
+  Check,
+  TrendingUp
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -49,7 +50,7 @@ const contactMethods = [
 const features = [
   { icon: Clock, label: "24-hour response time" },
   { icon: MessageCircle, label: "Dedicated support team" },
-  { icon: Globe, label: "Global coverage" },
+  { icon: TrendingUp, label: "Scalable Workforce Coverage" },
 ];
 
 export function Contact() {
@@ -385,7 +386,7 @@ export function Contact() {
                       )}
                     </Button>
 
-                    <p className="text-xs text-center text-muted-foreground">
+                    {/* <p className="text-xs text-center text-muted-foreground"> 
                       By submitting, you agree to our{" "}
                       <a href="#" className="text-primary hover:underline">
                         Privacy Policy
@@ -394,7 +395,7 @@ export function Contact() {
                       <a href="#" className="text-primary hover:underline">
                         Terms of Service
                       </a>
-                    </p>
+                    </p>*/}
                   </form>
                 )}
               </div>

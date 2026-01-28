@@ -215,12 +215,7 @@ export function Features() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center mt-16 sm:mt-20"
         >
-          <p className="text-muted-foreground text-sm">
-            And many more features to discover.{" "}
-            <Link to="/features/employee-management" className="text-primary font-medium link-underline">
-              View all features →
-            </Link>
-          </p>
+         
         </motion.div>
       </div>
     </section>
