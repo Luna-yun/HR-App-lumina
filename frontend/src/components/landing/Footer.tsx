@@ -20,7 +20,7 @@ const footerLinks = {
   ],
   features: [
     { name: "Time Tracking", href: "/features/time-tracking" },
-    { name: "ASEAN Lanour Policies", href: "/features/asean-labour-policies" },
+    { name: "ASEAN Labour Policies", href: "/features/asean-labour-policies" },
     { name: "HR Administrations", href: "features/hr-administration" },
     { name: "Workflow Automation", href: "features/workflow-automation" },
   ],
