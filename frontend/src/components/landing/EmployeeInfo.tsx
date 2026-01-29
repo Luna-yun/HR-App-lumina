@@ -24,8 +24,8 @@ const features = [
     id: "organize-entities",
     icon: Building2,
     iconClass: "feature-icon-blue",
-    title: "Organize Business Entities",
-    description: "Manage multiple entities, divisions, and organizational structures effortlessly.",
+    title: "AI ASEAN Law Chat bot",
+    description: "Can clarify and determine to show percentage about how related the user ask about leave and termination from respective ASEAN country.",
     highlights: [""],
   },
   {
