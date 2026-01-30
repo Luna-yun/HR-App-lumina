@@ -39,7 +39,7 @@ const TEAM: TeamMember[] = [
     bio: "Contributed to collecting and organizing project-related data such as ASEAN labour guidelines, HR workflows, and system documentation needs.",
     phone: "+95 9 456 789 123",
     email: "thethtethnin@uit.edu.mm",
-    image: ThhImage,
+    image: "",
   },
   {
     id: 4,
