@@ -26,6 +26,24 @@ async def get_db() -> AsyncIOMotorDatabase:
     from server import db
     return db
 
+# Helper function to get user's country from user record or company
+async def get_user_country(user: dict, db: AsyncIOMotorDatabase) -> str:
+    """Get user's country - from user field or company if not found"""
+    # If user has country field, use it
+    if user.get("country"):
+        return user["country"]
+    
+    # Otherwise, look up company country
+    try:
+        company = await db.companies.find_one({"id": user["company_id"]})
+        if company and company.get("country"):
+            return company["country"]
+    except Exception as e:
+        logger.warning(f"Failed to lookup company country: {str(e)}")
+    
+    # Fallback to empty string
+    return ""
+
 @router.post("/auth/signup", response_model=dict)
 async def signup(request: SignUpRequest, db: AsyncIOMotorDatabase = Depends(get_db)):
     """
@@ -87,6 +105,7 @@ async def signup(request: SignUpRequest, db: AsyncIOMotorDatabase = Depends(get_
             role=request.role,
             company_id=company_id,
             company_name=request.company_name,
+            country=company.get("country", ""),  # Store company's country
             full_name=request.full_name,
             is_verified=True,  # Auto-verified
             is_approved=(request.role == UserRole.ADMIN),  # Admins are auto-approved
@@ -147,6 +166,9 @@ async def login(request: LoginRequest, db: AsyncIOMotorDatabase = Depends(get_db
             {"id": user["id"]},
             {"$set": {"last_login": datetime.utcnow()}}
         )
+
+        # Get user's country (from user or company)
+        user_country = await get_user_country(user, db)
         
         # Create access token
         access_token = create_access_token(
@@ -164,7 +186,7 @@ async def login(request: LoginRequest, db: AsyncIOMotorDatabase = Depends(get_db
             role=user["role"],
             company_id=user["company_id"],
             company_name=user["company_name"],
-            country=user.get("country", "Singapore"),
+            country=user_country,
             full_name=user.get("full_name", ""),
             department=user.get("department", "Unassigned"),
             job_title=user.get("job_title", ""),
@@ -200,6 +222,9 @@ async def get_me(current_user: dict = Depends(get_current_user), db: AsyncIOMoto
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
+
+        # Get user's country (from user or company)
+        user_country = await get_user_country(user, db)
         
         return UserResponse(
             id=user["id"],
@@ -207,7 +232,7 @@ async def get_me(current_user: dict = Depends(get_current_user), db: AsyncIOMoto
             role=user["role"],
             company_id=user["company_id"],
             company_name=user["company_name"],
-            country=user.get("country", "Singapore"),
+            country=user_country,
             full_name=user.get("full_name", ""),
             department=user.get("department", "Unassigned"),
             job_title=user.get("job_title", ""),
@@ -433,13 +458,17 @@ async def update_profile(
         
         # Get updated user
         updated_user = await db.users.find_one({"id": user["id"]})
-        
+
+        # Get user's country (from user or company)
+        user_country = await get_user_country(updated_user, db)
+          
         return UserResponse(
             id=updated_user["id"],
             email=updated_user["email"],
             role=updated_user["role"],
             company_id=updated_user["company_id"],
             company_name=updated_user["company_name"],
+            country=user_country,
             full_name=updated_user.get("full_name", ""),
             department=updated_user.get("department", "Unassigned"),
             job_title=updated_user.get("job_title", ""),

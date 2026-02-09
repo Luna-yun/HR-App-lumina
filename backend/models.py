@@ -45,6 +45,7 @@ class User(BaseModel):
     role: str  # Admin or Employee
     company_id: str
     company_name: str = ""  # Denormalized for easier queries
+    country: str = ""  # Company's ASEAN country (denormalized)
     
     # Profile fields
     full_name: str = ""
