@@ -2,6 +2,11 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 
 test.describe('Authentication', () => {
+  test('simple page load test', async ({ page }) => {
+    await page.goto('/');
+    await expect(page).toHaveTitle(/LuminaHR/);
+  });
+
   test('successful login redirects to dashboard', async ({ page }) => {
     const loginPage = new LoginPage(page);
 

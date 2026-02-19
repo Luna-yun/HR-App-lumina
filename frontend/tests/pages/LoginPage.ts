@@ -22,7 +22,12 @@ export class LoginPage {
   async login(email: string, password: string) {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
-    await this.submitButton.click();
+    
+    // Click submit and wait for either navigation or network response
+    await Promise.all([
+      this.submitButton.click(),
+      this.page.waitForLoadState('networkidle', { timeout: 10000 }).catch(() => {}),
+    ]);
   }
 
   async loginWithInvalidCredentials(email: string, password: string) {

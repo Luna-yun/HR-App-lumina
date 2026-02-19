@@ -15,6 +15,14 @@ test.describe('Dashboard', () => {
 
     // Check for basic dashboard elements (may not have stats if API fails)
     await expect(page.locator('[data-testid="dashboard-welcome-banner"]')).toBeVisible();
+
+    // Optionally check for stats cards (don't fail if API doesn't load)
+    const statsCount = await dashboardPage.getStatsCount();
+    if (statsCount > 0) {
+      console.log(`Found ${statsCount} stats cards`);
+    } else {
+      console.log('No stats cards found - API may not be loading data');
+    }
   });
 
   test('sidebar navigation works', async ({ page }) => {

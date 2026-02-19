@@ -3,6 +3,8 @@ import { LoginPage } from '../pages/LoginPage';
 
 const authFile = 'playwright/.auth/user.json';
 
+setup.use({ browserName: 'firefox' });
+
 setup('authenticate', async ({ page }) => {
   const loginPage = new LoginPage(page);
 

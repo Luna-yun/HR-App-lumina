@@ -10,7 +10,7 @@ export class DashboardPage {
   constructor(page: Page) {
     this.page = page;
     this.welcomeMessage = page.locator('[data-testid="dashboard-welcome-banner"]');
-    this.statsCards = page.locator('[data-testid="stats-card"], .grid > div').first();
+    this.statsCards = page.locator('.stat-card');
     this.recentActivity = page.locator('text=Recent Activity').or(page.locator('h2').filter({ hasText: /Activity|Recent/ }));
     this.sidebarMenu = page.locator('nav, aside');
   }
