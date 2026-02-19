@@ -153,6 +153,7 @@ export default function Login() {
             transition={{ delay: 0.3, duration: 0.5 }}
             onSubmit={handleSubmit}
             className="space-y-6"
+            data-testid="login-form"
           >
             {/* Email Field */}
             <div className="space-y-2">
@@ -215,6 +216,7 @@ export default function Login() {
               type="submit"
               disabled={isLoading}
               className="w-full h-12 text-base font-semibold group"
+              data-testid="login-submit-btn"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2">
