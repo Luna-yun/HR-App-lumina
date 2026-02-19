@@ -6,7 +6,11 @@ test.describe('Authentication', () => {
     const loginPage = new LoginPage(page);
 
     await loginPage.goto();
-  await loginPage.login('SGadmin@gmail.com', 'TestPass123!');
+    await loginPage.login('SGadmin@gmail.com', 'TestPass123!');
+
+    // Should redirect to admin dashboard
+    await expect(page).toHaveURL(/\/admin/);
+  });
 
   test('failed login shows error message', async ({ page }) => {
     const loginPage = new LoginPage(page);
