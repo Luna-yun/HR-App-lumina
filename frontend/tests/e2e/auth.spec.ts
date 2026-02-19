@@ -18,8 +18,9 @@ test.describe('Authentication', () => {
     await loginPage.goto();
     await loginPage.loginWithInvalidCredentials('invalid@email.com', 'wrongpassword');
 
-    // Should stay on login page and show error
+    // Should stay on login page and show error toast
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.locator('text=Login Failed')).toBeVisible();
+    // Wait for error toast to appear
+    await expect(page.locator('[data-sonner-toast]')).toContainText('Login Failed');
   });
 });
