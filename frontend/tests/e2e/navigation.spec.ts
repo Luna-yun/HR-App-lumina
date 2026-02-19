@@ -12,7 +12,7 @@ test.describe('Navigation', () => {
   test('authenticated user can access protected routes', async ({ page }) => {
     // First login
     await page.goto('/login');
-    await page.fill('#email', 'testadmin@luminahr.com');
+    await page.fill('#email', 'SGadmin@gmail.com');
     await page.fill('#password', 'TestPass123!');
     await page.click('button[type="submit"]');
 
@@ -27,7 +27,7 @@ test.describe('Navigation', () => {
   test('sidebar navigation works', async ({ page }) => {
     // Login first
     await page.goto('/login');
-    await page.fill('#email', 'testadmin@luminahr.com');
+    await page.fill('#email', 'SGadmin@gmail.com');
     await page.fill('#password', 'TestPass123!');
     await page.click('button[type="submit"]');
 

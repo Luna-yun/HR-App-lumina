@@ -36,7 +36,7 @@ ENABLE_HEALTH_CHECK=false
 ```
 
 **Note**: Tests require a test admin user with credentials:
-- Email: `testadmin@luminahr.com`
+- Email: `SGadmin@gmail.com`
 - Password: `TestPass123!`
 
 If this user doesn't exist in the deployed backend, create it manually or update the credentials in `tests/setup/auth.setup.ts`.

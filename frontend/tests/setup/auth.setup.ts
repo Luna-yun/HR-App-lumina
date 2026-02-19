@@ -10,7 +10,7 @@ setup('authenticate', async ({ page }) => {
   await page.goto('/login');
 
   // Login with test credentials
-  await loginPage.login('testadmin@luminahr.com', 'TestPass123!');
+  await loginPage.login('SGadmin@gmail.com', 'TestPass123!');
 
   // Wait for navigation to dashboard
   await page.waitForURL(/\/(admin|employee)/);
