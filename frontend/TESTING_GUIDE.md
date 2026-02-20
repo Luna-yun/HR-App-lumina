@@ -36,6 +36,8 @@ npm install
 npx playwright install --with-deps
 ```
 
+Note: Scripts work on Windows, macOS, and Linux. Windows users don't need to do anything special—the scripts use `cross-env` for compatibility.
+
 ### Environment Configuration
 Tests can run against a local dev server or a backend API. Configure the backend and test user via environment variables. Recommended variables:
 
