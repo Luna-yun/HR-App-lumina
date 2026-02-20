@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
 
-// Prefer explicit frontend/backend env vars (allow testing production directly).
-const BACKEND =
-  process.env.REACT_APP_BACKEND_URL || process.env.VITE_BACKEND_URL || process.env.TEST_BACKEND_URL || 'http://localhost:8001';
+// Default to production backend for test:api script
+// When called locally, use http://localhost:8001 if backend is running
+const BACKEND = 'https://brighthr.emergent.host';
 const API_BASE = `${BACKEND.replace(/\/$/, '')}/api`;
 
-const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'SGadmin@gmail.com';
-const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'TestPass123!';
+const TEST_EMAIL = 'SGadmin@gmail.com';
+const TEST_PASSWORD = 'TestPass123!';
 
 test.describe('Auth API', () => {
   test('login with wrong credentials returns 401', async ({ request }) => {
