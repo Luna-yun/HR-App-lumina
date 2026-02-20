@@ -12,7 +12,10 @@
     "preview": "vite preview",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:report": "playwright show-report"
+    "test:e2e:report": "playwright show-report",
+    "test:api": "REACT_APP_BACKEND_URL=https://brighthr.emergent.host/ VITE_BACKEND_URL=https://brighthr.emergent.host/ playwright test tests/api --project=chromium",
+    "test:accessibility": "playwright test tests/e2e/accessibility.spec.ts --project=chromium",
+    "test:all": "npm run test:e2e && npm run test:api && npm run test:accessibility"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
@@ -81,6 +84,8 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@playwright/test": "^1.58.2",
+    "@axe-core/playwright": "^4.0.0",
+    "axe-core": "^4.13.0",
     "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",

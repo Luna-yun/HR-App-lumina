@@ -11,8 +11,10 @@ setup('authenticate', async ({ page }) => {
   // Navigate to login page
   await page.goto('/login');
 
-  // Login with test credentials
-  await loginPage.login('SGadmin@gmail.com', 'TestPass123!');
+  // Login with test credentials (driven by env for determinism)
+  const TEST_EMAIL = process.env.TEST_USER_EMAIL || 'SGadmin@gmail.com';
+  const TEST_PASSWORD = process.env.TEST_USER_PASSWORD || 'TestPass123!';
+  await loginPage.login(TEST_EMAIL, TEST_PASSWORD);
 
   // Wait for navigation to dashboard
   await page.waitForURL(/\/(admin|employee)/);

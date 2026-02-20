@@ -1,0 +1,18 @@
+[build]
+builder = "dockerfile"
+dockerfile = "Dockerfile"
+
+[env]
+MONGO_URL = { default = "" }
+SECRET_KEY = { default = "" }
+GROQ_API_KEY = { default = "" }
+QDRANT_URL = { default = "" }
+CORS_ORIGINS = { default = "*" }
+DB_NAME = { default = "ems_database" }
+
+[[services]]
+name = "api"
+dockerfile = "Dockerfile"
+port = 8000
+buildCommand = "pip install --no-cache-dir -r requirements.txt"
+startCommand = "uvicorn server:app --host 0.0.0.0 --port $PORT"
