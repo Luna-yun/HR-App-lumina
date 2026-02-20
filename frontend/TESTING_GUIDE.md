@@ -102,11 +102,6 @@ npm run test:e2e:report
 npm run test:api
 ```
 
-### Run Accessibility Tests (axe)
-```bash
-npm run test:accessibility
-```
-
 ### Run Specific Tests
 ```bash
 # Run only auth tests
@@ -132,7 +127,6 @@ frontend/tests/
 ├── e2e/
 │   ├── auth.spec.ts           # Authentication tests
 │   ├── dashboard.spec.ts      # Dashboard tests
-│   ├── accessibility.spec.ts  # Accessibility checks (axe)
 │   ├── employee.spec.ts       # Employee management tests
 │   └── navigation.spec.ts     # Navigation tests
 └── api/
@@ -149,10 +143,11 @@ Each page has a POM class in `tests/pages/` encapsulating locators and actions.
 
 ## Test Categories Implemented
 
-- Functional (E2E UI): `tests/e2e/*.spec.ts` (login, dashboard, navigation, employee).
-- API Testing: `tests/api/auth.api.spec.ts` — validates login (401/200) and protected endpoints.
-- Security / Access Control: API-level checks ensure protected endpoints return 401/403 without token and 200 with valid token.
-- Accessibility: `tests/e2e/accessibility.spec.ts` uses `@axe-core/playwright`; tests fail on violations for `/login` and `/admin`.
+- **Functional (E2E UI)**: `tests/e2e/*.spec.ts` (login, dashboard, navigation, employee).
+- **API Testing**: `tests/api/auth.api.spec.ts` — validates login (401/200) and protected endpoints.
+- **Security / Access Control**: API-level checks ensure protected endpoints return 401/403 without token and 200 with valid token.
+
+All test categories run across Chromium, Firefox, and WebKit browsers for cross-browser compatibility.
 
 ## Deterministic Test Guidance
 

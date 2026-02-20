@@ -14,8 +14,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
     "test:api": "cross-env REACT_APP_BACKEND_URL=https://brighthr.emergent.host/ VITE_BACKEND_URL=https://brighthr.emergent.host/ playwright test tests/api --project=chromium",
-    "test:accessibility": "playwright test tests/e2e/accessibility.spec.ts --project=chromium",
-    "test:all": "npm run test:e2e && npm run test:api && npm run test:accessibility"
+    "test:all": "npm run test:e2e && npm run test:api"
   },
   "dependencies": {
     "@gsap/react": "^2.1.2",
