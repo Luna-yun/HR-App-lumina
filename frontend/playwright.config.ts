@@ -49,13 +49,6 @@ export default defineConfig({
     },
 
     {
-      name: 'api',
-      testMatch: '**/api/*.spec.ts',
-      use: { ...devices['Desktop Chrome'] },
-      // No dependencies - API tests don't need UI authentication
-    },
-
-    {
       name: 'a11y',
       testMatch: '**/a11y/*.spec.ts',
       use: { ...devices['Desktop Chrome'] },
