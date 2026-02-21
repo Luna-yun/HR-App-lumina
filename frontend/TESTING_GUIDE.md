@@ -119,18 +119,20 @@ npx playwright test --headed
 ```
 frontend/tests/
 ├── setup/
-│   └── auth.setup.ts          # Authentication setup
+│   └── auth.setup.ts              # Authentication setup
 ├── pages/
-│   ├── LoginPage.ts           # Login page object
-│   ├── DashboardPage.ts       # Dashboard page object
-│   └── EmployeePage.ts        # Employee management page object
+│   ├── LoginPage.ts               # Login page object
+│   ├── DashboardPage.ts           # Dashboard page object
+│   └── EmployeePage.ts            # Employee management page object
 ├── e2e/
-│   ├── auth.spec.ts           # Authentication tests
-│   ├── dashboard.spec.ts      # Dashboard tests
-│   ├── employee.spec.ts       # Employee management tests
-│   └── navigation.spec.ts     # Navigation tests
-└── api/
-    └── auth.api.spec.ts       # API and access-control tests
+│   ├── auth.spec.ts               # Authentication tests
+│   ├── dashboard.spec.ts          # Dashboard tests
+│   ├── employee.spec.ts           # Employee management tests
+│   └── navigation.spec.ts         # Navigation tests
+├── api/
+│   └── auth.api.spec.ts           # API and access-control tests
+└── a11y/
+    └── accessibility.spec.ts      # WCAG 2.1 accessibility audits (non-blocking)
 ```
 
 ## Explanation of Test Structure
@@ -146,8 +148,78 @@ Each page has a POM class in `tests/pages/` encapsulating locators and actions.
 - **Functional (E2E UI)**: `tests/e2e/*.spec.ts` (login, dashboard, navigation, employee).
 - **API Testing**: `tests/api/auth.api.spec.ts` — validates login (401/200) and protected endpoints.
 - **Security / Access Control**: API-level checks ensure protected endpoints return 401/403 without token and 200 with valid token.
+- **Accessibility Audits**: `tests/a11y/accessibility.spec.ts` — WCAG 2.1 compliance scanning (non-blocking, informational).
 
-All test categories run across Chromium, Firefox, and WebKit browsers for cross-browser compatibility.
+All test categories run across Chromium, Firefox, and WebKit browsers for cross-browser compatibility (except accessibility audits which run on Chromium only).
+
+## Accessibility Testing
+
+### Overview
+Accessibility tests scan key pages using axe-core to detect WCAG 2.1 violations. **These tests are non-blocking and always pass**—violations are reported for awareness and gradual improvement.
+
+### Why Non-Blocking?
+Accessibility is a continuous improvement process. Non-blocking tests allow teams to:
+- Track accessibility progress over sprints/releases
+- Avoid build failures while remediating issues
+- Prioritize fixes based on impact and severity
+- Integrate accessibility into the CI/CD pipeline without friction
+
+### Run Accessibility Tests
+```bash
+# Run all accessibility audits
+npm run test:accessibility
+
+# View accessibility report
+npm run test:accessibility:report
+```
+
+### Pages Audited
+- Login page
+- Admin dashboard
+- Employee dashboard
+- Employee leave management
+- Admin employees management
+- Admin attendance
+- Admin analytics
+
+### How to Read Results
+When running `npm run test:a11y`, output shows violations per page:
+```
+[A11Y] Login Page - 2 accessibility issue(s) found
+  - color-contrast: Ensures the contrast between foreground and background colors meets WCAG standards
+  - label: Ensures form elements have associated labels
+[A11Y] Admin Dashboard - ✓ No violations found
+```
+
+### Interpreting Violations
+Each violation includes the `id` (rule name) and `help` (description). Common issues:
+- `color-contrast`: Text doesn't meet WCAG AA contrast ratios
+- `label`: Form fields missing associated labels
+- `heading-order`: Heading structure is not properly hierarchical
+- `button-name`: Buttons lack accessible names
+- `alt-text`: Images missing alt text
+
+### Adding More Pages to Audit
+Edit `tests/a11y/accessibility.spec.ts` and add a new test:
+```typescript
+test('my-new-page accessibility', async ({ page }) => {
+  await page.goto('/route-to-page');
+  await injectAxe(page);
+  
+  const violations = await getViolations(page);
+  if (violations.length > 0) {
+    console.log(`[A11Y] My New Page - ${violations.length} issue(s) found`);
+    violations.forEach((v) => {
+      console.log(`  - ${v.id}: ${v.help}`);
+    });
+  } else {
+    console.log('[A11Y] My New Page - ✓ No violations found');
+  }
+});
+```
+
+Then run `npm run test:accessibility` to test it.
+```
 
 ## Deterministic Test Guidance
 

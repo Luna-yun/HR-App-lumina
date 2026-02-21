@@ -1,125 +1,207 @@
 # LuminaHR Copilot Instructions
 
-## Architecture Overview
+## Critical Architecture Patterns
 
-LuminaHR is an ASEAN-focused HR management platform with a modern microservices architecture:
+### Backend: Dependency Injection Pattern
+FastAPI routes use dependency injection for database and auth. **Always** follow this pattern:
+```python
+from fastapi import Depends
+from auth_utils import get_current_user, get_current_admin
 
-- **Frontend**: React 18 + TypeScript + TailwindCSS + Shadcn UI, deployed on Vercel
-- **Backend**: FastAPI + Python 3.11 + MongoDB Atlas, deployed on Emergent
-- **AI Layer**: Groq (LLaMA 3.1) + Qdrant vector database for RAG-based HR chatbot
-- **Database**: MongoDB with Motor async driver, optimized with strategic indexes
-- **Auth**: JWT-based with role-based access (Admin/Employee)
+@router.post("/leave/request")
+async def create_leave(
+    request: LeaveRequestCreate,
+    current_user: dict = Depends(get_current_user),  # Any endpoint needing auth
+    db: AsyncIOMotorDatabase = Depends(get_db)      # Database access
+):
+    employee_id = current_user["sub"]  # Extract user ID from JWT payload
+    company_id = current_user["company_id"]  # Always scope queries to company_id
+```
+- `get_current_user()`: Returns decoded JWT with `sub` (user ID) and `company_id`
+- `get_current_admin()`: Wraps `get_current_user()`, raises 403 if not admin
+- Never skip `company_id` scoping—this is multi-tenant data isolation
 
-## Key Design Patterns
+### Frontend: API Service Organization
+Services in `src/services/api.ts` use axios with two critical interceptors:
+```typescript
+// Token injection (automatic on every request)
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
-### API Structure
-- All endpoints prefixed with `/api`
-- JWT authentication via `Authorization: Bearer <token>` header
-- RESTful design with consistent response formats
-- CORS configured for cross-origin requests
+// 401 logout (automatic redirect on token expiry)
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+```
+Services organized by feature: `authAPI`, `employeeAPI`, `attendanceAPI`, etc.
 
-### Database Schema
-- Company-scoped data with `company_id` fields
-- Denormalized fields for performance (e.g., `company_name`, `country`)
-- Strategic indexes on `company_id + status`, `employee_id + date` combinations
-- Collections: users, companies, leave_requests, attendance, salary_records, notifications, etc.
+### Multi-Tenancy via company_id
+All queries MUST include `company_id` filtering:
+```python
+# Correct: Company-scoped query
+leave_reqs = await db.leave_requests.find({
+    "employee_id": employee_id,
+    "company_id": company_id  # Required for data isolation
+}).to_list(100)
 
-### Frontend Patterns
-- React Router with protected routes based on user roles
-- Auth context for global state management
-- Axios interceptors for automatic token injection
-- Shadcn UI components with TailwindCSS styling
-- TypeScript strict mode with comprehensive type definitions
+# Incorrect: Would leak data between companies
+leave_reqs = await db.leave_requests.find({"employee_id": employee_id}).to_list(100)
+```
+
+## Testing: Playwright Patterns (E2E & API)
+
+### E2E Testing with Page Objects
+Tests live in `frontend/tests/e2e/` and use Page Object Model pattern:
+```typescript
+// Test file (e.g., auth.spec.ts)
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/LoginPage';
+
+test('successful login redirects to dashboard', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.goto();
+  await loginPage.login('SGadmin@gmail.com', 'TestPass123!');
+  await expect(page).toHaveURL(/\/admin/);
+});
+```
+Page Objects in `frontend/tests/pages/` encapsulate selectors and interactions:
+```typescript
+export class LoginPage {
+  readonly emailInput: Locator = page.locator('#email');
+  readonly submitButton: Locator = page.locator('[data-testid="login-submit-btn"]');
+  
+  async login(email: string, password: string) {
+    await this.emailInput.fill(email);
+    await this.submitButton.click();
+    await this.page.waitForLoadState('networkidle');
+  }
+}
+```
+
+### Test Setup: Auth State Storage
+Setup project in `frontend/tests/setup/auth.setup.ts` authenticates once, stores state:
+```typescript
+const authFile = 'playwright/.auth/user.json';
+setup('authenticate', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  await loginPage.login(TEST_EMAIL, TEST_PASSWORD);
+  await page.context().storageState({ path: authFile }); // Store auth state
+});
+```
+E2E tests depend on setup and reuse auth state (no re-login per test).
+
+### API Testing
+`frontend/tests/api/` tests backend directly (integration, no UI):
+```typescript
+// No UI, just HTTP requests (can run in parallel)
+test('login returns token', async ({ request }) => {
+  const resp = await request.post(`${API_BASE}/auth/login`, 
+    { data: { email: TEST_EMAIL, password: TEST_PASSWORD } });
+  expect(resp.status()).toBe(200);
+  expect(resp.json()).toHaveProperty('access_token');
+});
+```
+Use `test:api` script which configures `VITE_BACKEND_URL` (points to deployed backend).
+
+### Running Tests
+```bash
+# E2E (uses local frontend + backend)
+npm run test:e2e
+npm run test:e2e:ui          # Interactive mode
+
+# API (tests deployed backend, runs anywhere)
+npm run test:api
+
+# All
+npm run test:all
+```
+
+## Database & Validation
 
 ### ASEAN Compliance
-- Country-specific validation using `ASEAN_COUNTRIES` list
-- Labor law considerations in leave policies and termination workflows
-- Multi-currency support implied in salary management
+`backend/models.py` validates country against ASEAN list:
+```python
+ASEAN_COUNTRIES = ["Brunei", "Cambodia", ..., "Vietnam", "Timor-Leste"]
 
-## Development Workflow
-
-### Backend Development
-```bash
-# Start development server with hot reload
-uvicorn server:app --host 0.0.0.0 --port 8001 --reload
-
-# Run tests
-pytest
-
-# API documentation at http://localhost:8001/docs
+class Company(BaseModel):
+    country: str
+    
+    @field_validator('country')
+    def validate_country(cls, v):
+        if v not in ASEAN_COUNTRIES:
+            raise ValueError(f'Must be ASEAN country')
+        return v
 ```
 
-### Frontend Development
-```bash
-# Start development server
-yarn dev  # or npm run dev
+### Strategic Indexes (Performance)
+Indexes created on startup in `server.py`:
+- `users`: `email` (unique), `company_id`, `(company_id, role)`, `(company_id, department)`
+- `leave_requests`: `(company_id, employee_id)`, `(company_id, status)`
+- Always query on indexed fields for company scoping
 
-# Build for production
-yarn build
+## Environment Variables
 
-# Run tests
-yarn test
+### Backend
+```plaintext
+MONGO_URL=mongodb+srv://...              # Atlas connection string
+DB_NAME=ems_database                     # Default database name
+JWT_SECRET=your_secret_key               # For token signing (HS256)
+JWT_ALGORITHM=HS256                      # Token algorithm
+ACCESS_TOKEN_EXPIRE_MINUTES=10080        # 7 days default
+CORS_ORIGINS=*                           # Frontend URL in production
+GROQ_API_KEY=...                         # LLaMA inference (AI chat)
+QDRANT_URL=...                           # Vector DB (RAG documents)
 ```
 
-### Environment Setup
-- Backend: `.env` with `MONGO_URL`, `SECRET_KEY`, `GROQ_API_KEY`, `QDRANT_URL`
-- Frontend: `.env` with `VITE_BACKEND_URL` (note: VITE_ prefix for client-side exposure)
+### Frontend
+```plaintext
+VITE_BACKEND_URL=http://localhost:8001   # API base URL (note VITE_ prefix)
+VITE_TEST_BASE_URL=http://localhost:3000 # Playwright base URL for tests
+```
 
-## Code Organization
+## Development & Deployment
 
-### Backend Routes
-- `auth_routes.py`: JWT auth, user management
-- `*_routes.py`: Feature-specific endpoints (leave, attendance, salary, etc.)
-- `ai_chat_routes.py`: RAG chatbot with document upload
-- All routes included with `app.include_router(router, prefix="/api")`
+### Backend Commands
+```bash
+uvicorn server:app --host 0.0.0.0 --port 8001 --reload  # Dev with hot reload
+pytest                                                    # Run tests
+# API docs at http://localhost:8001/docs (auto-generated)
+```
 
-### Frontend Structure
-- `/admin/*`: Admin dashboard routes (employees, analytics, recruitment)
-- `/employee/*`: Employee self-service routes (profile, leave, attendance)
-- `/features/*`: Public marketing pages
-- Protected routes use `ProtectedRoute` component with role checking
+### Frontend Commands
+```bash
+yarn dev        # Vite dev server (hot reload)
+yarn build      # Production build (output: build/)
+yarn test:e2e   # Playwright tests
+```
 
-## Common Patterns
+### Deployment
+- **Frontend**: Vercel (from `frontend/`) — runs `yarn build`
+- **Backend**: Emergent platform with Gunicorn workers
+- **Database**: MongoDB Atlas
+- **Vector DB**: Qdrant (for AI documents)
 
-### Authentication Flow
-1. Login/signup creates JWT token stored in localStorage
-2. Axios interceptor adds `Bearer` token to all requests
-3. Backend validates token with `get_current_user()` dependency
-4. Role-based access via `get_current_admin()` for admin-only endpoints
+## Code Organization Quick Reference
 
-### Database Queries
-- Use `company_id` for data isolation between companies
-- Leverage MongoDB aggregation pipelines for analytics
-- Async operations with Motor for non-blocking I/O
-
-### Error Handling
-- FastAPI HTTPException with appropriate status codes
-- Frontend toast notifications for user feedback
-- Logging with structured format for debugging
-
-### AI Integration
-- Document upload chunks content for vector storage
-- RAG retrieval combines user query with relevant HR documents
-- Groq API for fast LLM inference with LLaMA models
-
-## Testing Strategy
-
-- Backend: pytest with async support, focus on API endpoints
-- Frontend: React Testing Library for component testing
-- Integration tests for critical workflows (auth, leave approval)
-
-## Deployment
-
-- Frontend: Vercel with `yarn build` command
-- Backend: Emergent platform with Gunicorn workers
-- Environment variables configured in respective platforms
-- MongoDB Atlas for production database
-
-## Key Files to Reference
-
-- `backend/server.py`: Main FastAPI app with route inclusion and DB setup
-- `backend/models.py`: Pydantic models and ASEAN country validation
-- `frontend/src/App.tsx`: React Router configuration with protected routes
-- `frontend/src/services/api.ts`: Axios configuration with auth interceptors
-- `frontend/src/contexts/AuthContext.tsx`: Authentication state management</content>
+| Component | Location | Pattern |
+|-----------|----------|---------|
+| Auth | `backend/auth_routes.py` | Signup/login, JWT creation |
+| Features | `backend/{leave,attendance,salary,*}_routes.py` | Feature endpoints, all use `Depends(get_current_user)` |
+| Models | `backend/models.py` | Pydantic validation, ASEAN countries |
+| Database | `backend/server.py` | Startup indexes, Motor client |
+| Frontend Router | `frontend/src/App.tsx` | Protected routes by role (Admin/Employee) |
+| API Calls | `frontend/src/services/api.ts` | Feature-grouped services with axios |
+| Auth Context | `frontend/src/contexts/AuthContext.tsx` | Token/user state, localStorage sync |
+| E2E Tests | `frontend/tests/e2e/` | Playwright with page objects |
+| Setup | `frontend/tests/setup/auth.setup.ts` | Pre-authenticate, store state |</content>
 <parameter name="filePath">/workspaces/HR-App-lumina/.github/copilot-instructions.md
