@@ -48,6 +48,13 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
+    {
+      name: 'a11y',
+      testMatch: '**/a11y/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+    },
+
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
