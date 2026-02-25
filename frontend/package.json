@@ -18,7 +18,7 @@
     "test:accessibility:report": "playwright show-report",
     "test:performance:frontend": "playwright test tests/performance --project=performance",
     "test:performance:frontend:report": "playwright show-report",
-    "test:performance:backend": "cross-env REACT_APP_BACKEND_URL=https://brighthr.emergent.host/ pytest tests/test_performance.py -v",
+    "test:performance:backend": "cross-env REACT_APP_BACKEND_URL=https://brighthr.emergent.host/ pytest ../tests/test_performance.py -v",
     "test:performance": "npm run test:performance:frontend && npm run test:performance:backend",
     "test:all": "npm run test:e2e && npm run test:api && npm run test:accessibility && npm run test:performance"
   },
