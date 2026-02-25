@@ -221,6 +221,107 @@ test('my-new-page accessibility', async ({ page }) => {
 Then run `npm run test:accessibility` to test it.
 ```
 
+## Performance Testing 📊
+
+Performance testing measures how **fast** the application loads and responds. Tests check both frontend page load times and backend request response times.
+
+### What Gets Tested?
+
+**Frontend Performance** (Playwright):
+- Page load times for all major routes (login, dashboards, lists, analytics)
+- Browser rendering performance
+- Response times under normal conditions
+
+**Backend Performance** (Pytest):
+- Individual API endpoint response times
+- Concurrent request handling
+- Database query performance
+- System stability under load
+
+### Running Performance Tests
+
+```bash
+# All performance tests (frontend + backend)
+npm run test:performance
+
+# Frontend only
+npm run test:performance:frontend
+
+# Backend only
+npm run test:performance:backend
+
+# View detailed report
+npm run test:performance:frontend:report
+```
+
+### Example Output
+
+Frontend Performance:
+```
+[PERF] Login page load performance ✓
+  ✓ (1.2s) - Page loaded in 1234ms
+[PERF] Login Page Load Time: 1234ms
+
+[PERF] Admin dashboard load performance ✓
+  ✓ (2.1s) - Page loaded in 2456ms
+[PERF] Admin Dashboard Load Time: 2456ms
+```
+
+Backend Performance:
+```
+test_login_response_time PASSED
+[PERF] Login endpoint response time: 1234.56ms
+
+test_concurrent_login_requests PASSED
+[PERF] Concurrent Login Requests (5 parallel):
+  - Average: 1523.21ms
+  - Min: 1234.56ms
+  - Max: 1876.32ms
+
+✓ 8 passed in 45.23s
+```
+
+### Performance Targets
+
+**Frontend Page Loads**:
+- Login: < 5 seconds
+- Dashboards: < 8 seconds
+- Lists/Tables: < 8 seconds
+- Analytics/Heavy Pages: < 10 seconds
+
+**Backend Endpoints**:
+- Login: < 2 seconds
+- Profile fetch: < 1 second
+- List endpoints: < 3 seconds
+- Concurrent requests (5): All < 5 seconds
+
+**Success Metrics**:
+- P95: 95% of requests faster than this time
+- P99: 99% of requests faster than this time
+- Success Rate: 100% (no failures under load)
+
+### Interpreting Results
+
+**All tests pass ✅**: Performance is healthy
+
+**Tests slow down over time ⚠️**: Investigate:
+- New database queries
+- Additional dependencies
+- Backend load issues
+
+**Tests timeout ❌**: Critical performance issue:
+- Backend may be down
+- Network connectivity problem
+- Database performance degraded
+
+### For Detailed Guidance
+
+See [PERFORMANCE_TESTING_GUIDE.md](./PERFORMANCE_TESTING_GUIDE.md) for:
+- Complete metrics explanation
+- Troubleshooting guide
+- Performance optimization tips
+- Environment variable setup
+
 ## Deterministic Test Guidance
 
 - Use `TEST_USER_EMAIL`/`TEST_USER_PASSWORD` env variables to target a stable account.
