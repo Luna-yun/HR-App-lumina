@@ -55,6 +55,13 @@ export default defineConfig({
       dependencies: ['setup'],
     },
 
+    {
+      name: 'performance',
+      testMatch: '**/performance/*.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+      dependencies: ['setup'],
+    },
+
     /* Test against mobile viewports. */
     // {
     //   name: 'Mobile Chrome',
